@@ -1,6 +1,7 @@
-# GPAIRLS: Generalizing Persistent Advice in Interactive Reinforcement Learning Scenarios
+# Generalizing Persistent Advice in Interactive Reinforcement Learning Scenarios
 
 Seminar project for the course [Bio-Inspired Artificial Intelligence](https://www.inf.uni-hamburg.de/en/inst/ab/wtm/teaching/teaching-2021-wise-bioinspired-ai-seminar.html) (WiSe 21/22) at the University of Hamburg.
 
 ## Abstract
 
+Interactive reinforcement learning methods are researched extensively to leverage expert assistance for learning optimal policies. Previous approaches in interactive RL have mainly focused on real-time advice, which is neither subsequently stored nor used for states other than the one it was provided for. Later approaches such as rule-based persistent interactive RL and broad-persistent advising have incorporated methods to retain and reuse knowledge, enabling agents to utilize the general advice in different relevant states. This work introduces a generalization model for broad-persistent advising which uses bisimulation metrics to evaluate similarity of states and to determine the relevant target state set for given advice. In contrast to direct state-space clustering (e.g. using K-means), bisimulation metrics capture behavioral information of an agent, possibly providing better grouping of similar states. Due to computational cost of bisimulation metrics in Markov decision processes (MDPs) with large or continuous state spaces, a differentiable approximation technique is used.
