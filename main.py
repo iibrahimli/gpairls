@@ -1,18 +1,18 @@
 import numpy as np
 
-from webots import RobotEnv
+from gpairls.webots import RobotEnv
 
-# TODO add depth channel to camera
 
 env = RobotEnv()
 print("Initialized environment.")
 
-obs = env.reset()
-done = False
-while not done:
-    action = np.random.uniform(-0.1, 0.1)
-    obs, reward, done = env.step(action)
-    print(f"Reward: {reward}")
-    env.render()
+for episode in range(50):
+    obs = env.reset()
+    done = False
+    episode_reward = 0
 
-print("Simulation finished.")
+    while not done:
+        action = np.random.uniform(-0.1, 0.1)
+        obs, reward, done = env.step(action)
+        episode_reward += reward
+        # env.render()

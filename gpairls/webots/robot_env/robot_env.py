@@ -24,30 +24,38 @@ class RobotEnv(gym.Env):
         Initialize the environment.
         """
         super(RobotEnv, self).__init__()
-        
+
+        # robot stuff
+        self.controller = EpuckSupervisor(config.CONTROL_TIMESTEP)
+
         # continuous action space in range [-1, 1]
         self.action_space = gym.spaces.Box(
             low=-1.0, high=1.0, shape=(1,), dtype=np.float32
         )
-        
+
         # RGB image observation
         self.observation_space = gym.spaces.Box(
-            low=0, high=255, shape=config.CAM_SHAPE, dtype=np.uint8
+            low=0, high=255, shape=self.controller.obs_shape, dtype=np.uint8
         )
-        
-        # robot stuff
-        self.controller = EpuckSupervisor(config.CONTROL_TIMESTEP)
 
-        # plt AxisImage to render the image
-        self.ax_im = None
+        # maximum steps per episode
+        self.max_steps = config.MAX_STEPS
+
+        # current env step
+        self.step_count = 0
+
+        # plt AxisImages to render the observation
+        self.rgb_axis_image = None
+        self.depth_axis_image = None
 
     def reset(self, seed=None, return_info=False, options=None):
         """
         Reset the environment.
         """
         super().reset(seed=seed)
+        self.step_count = 0
 
-        # TODO: add supervisor stuff to reset env
+        self.controller.reset()
 
         observation = self._get_obs()
         if return_info:
@@ -61,13 +69,25 @@ class RobotEnv(gym.Env):
         """
 
         done = False
+        reward = config.STEP_REWARD
+        self.step_count += 1
 
+        # move in simulation & check if sim ended
         if self.controller.step() != -1:
             self.controller.move(action)
         else:
             done = True
-
-        reward = -0.1
+        
+        # check if max steps reached
+        if self.step_count == self.max_steps:
+            done = True
+        
+        # check if goal is reached
+        goal_dist = self.controller.compute_distance_to_goal()
+        if goal_dist < config.GOAL_DISTANCE_THRESHOLD:
+            done = True
+            reward = config.GOAL_REWARD
+        
         observation = self._get_obs()
 
         if return_info:
@@ -79,18 +99,24 @@ class RobotEnv(gym.Env):
         """
         Render the environment.
         """
-        if self.ax_im is None:
-            # create figure for camera
-            ax1 = plt.subplot(111)
-            ax1.set_title("Camera image")
-            self.ax_im = ax1.imshow([[0]])
+        if self.rgb_axis_image is None:
+            # create figure for observation
+            fig, axes = plt.subplots(1, 2, figsize=(6, 3))
+            fig.suptitle("Observation")
+            axes[0].set_title("RGB image")
+            axes[1].set_title("Depth image")
+            self.rgb_axis_image = axes[0].imshow([[0]], vmin=0, vmax=255)
+            self.depth_axis_image = axes[1].imshow([[0]], cmap="gray_r", vmin=0, vmax=255)
             plt.ion()
-        self.ax_im.set_data(self._get_obs())
+        obs = self._get_obs()
+        self.rgb_axis_image.set_data(obs[..., :3])
+        self.depth_axis_image.set_data(obs[..., 3])
         plt.pause(config.CONTROL_TIMESTEP / 1000)
-    
+
     def close(self):
         self.ax_im = None
         plt.close("all")
+        del self.controller
 
     def _get_obs(self):
         """
