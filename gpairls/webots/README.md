@@ -1,3 +1,3 @@
-## Webots Project
+## Webots Gym Environment
 
-This directory contains the Webots project i.e. the world file and controllers, as well as the robot environment.
+This directory contains the Webots Gym environment, including the world file and robot supervisor.
