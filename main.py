@@ -15,4 +15,3 @@ for episode in range(50):
         action = np.random.uniform(-0.1, 0.1)
         obs, reward, done = env.step(action)
         episode_reward += reward
-        # env.render()
