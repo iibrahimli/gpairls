@@ -44,10 +44,10 @@ Work was conducted under supervision and advice of [Dr. Francisco Cruz](http://w
 
 This codebase is partially based on the following resources:
 
-- Deep Bisimulation for Control (licensed under CC-BY-NC 4.0):
+- [Zhang et al. 2021] Deep Bisimulation for Control (licensed under CC-BY-NC 4.0):
   
   [repository](https://github.com/facebookresearch/deep_bisim4control) | [paper](https://arxiv.org/abs/2006.10742)
-- Deep Reinforcement Learning and Interactive Feedback on Robot Domain:
+- [Nguyen et al. 2021] Deep Reinforcement Learning and Interactive Feedback on Robot Domain:
   
   [repository](https://github.com/mwizard1010/robot-control) | [paper](https://arxiv.org/pdf/2110.08003.pdf)
 
