@@ -130,5 +130,4 @@ class RobotEnv(gym.Env):
         """
         Get the info from current state.
         """
-        # TODO: get info such as distance to target
         return None
