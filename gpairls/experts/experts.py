@@ -13,9 +13,16 @@ class Expert(ABC):
     def __init__(
         self, env_name: str, competence: ExpertCompetenceConfig, name: str
     ) -> None:
+        """
+        Expert advisor model.
+
+        Args:
+            env_name (str): Name of the target Gym environment.
+            competence (ExpertCompetenceConfig): Expert competence.
+        """
         self.env_name = env_name
         self.competence = competence
-        self.name = name
+        self.name = f"{env_name}/{competence.name}"
         super().__init__()
 
     @abstractmethod
@@ -29,9 +36,8 @@ class Expert(ABC):
 class MountainCarExpert(Expert):
     def __init__(self) -> None:
         super().__init__(
-            "MountainCarContinuous-v0",
-            ExpertCompetencePreset.REALISTIC,
-            "Realistic-MountainCar",
+            env_name="MountainCarContinuous-v0",
+            competence=ExpertCompetencePreset.REALISTIC,
         )
 
     def get_action(self, obs):
@@ -49,7 +55,7 @@ class MountainCarExpert(Expert):
                     return [-1.0]
             else:
                 # incorrect (random) action
-                return np.random.uniform(-1., 1., 1)
+                return np.random.uniform(-1.0, 1.0, 1)
 
         else:
             # unavailable
