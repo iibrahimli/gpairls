@@ -1,3 +1,7 @@
+"""
+RL training config
+"""
+
 from pathlib import Path
 
 
@@ -15,6 +19,9 @@ TRAINING_STEPS = 20_000
 
 # number of steps to collect data before starting training
 INIT_STEPS = 1000
+
+# encoder type
+ENCODER_TYPE = "cnn"
 
 # dimensionality of feature vector from encoder
 ENCODER_FEATURE_DIM = 4

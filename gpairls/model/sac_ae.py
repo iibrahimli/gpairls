@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .encoder import MLPEncoder
+from .encoder import MLPEncoder, CNNEncoder
 
 
 def gaussian_logprob(noise, log_std):
@@ -55,13 +55,17 @@ class Actor(nn.Module):
         obs_shape,
         action_shape,
         hidden_dim,
+        encoder_type,
         encoder_feature_dim,
         log_std_min,
         log_std_max,
     ):
         super().__init__()
 
-        self.encoder = MLPEncoder(obs_shape, encoder_feature_dim)
+        encoder_args = (obs_shape, encoder_feature_dim)
+        self.encoder = {"mlp": MLPEncoder, "cnn": CNNEncoder}[encoder_type](
+            *encoder_args
+        )
 
         self.log_std_min = log_std_min
         self.log_std_max = log_std_max
@@ -149,11 +153,15 @@ class Critic(nn.Module):
         obs_shape,
         action_shape,
         hidden_dim,
+        encoder_type,
         encoder_feature_dim,
     ):
         super().__init__()
 
-        self.encoder = MLPEncoder(obs_shape, encoder_feature_dim)
+        encoder_args = (obs_shape, encoder_feature_dim)
+        self.encoder = {"mlp": MLPEncoder, "cnn": CNNEncoder}[encoder_type](
+            *encoder_args
+        )
 
         self.Q1 = QFunction(self.encoder.feature_dim, action_shape[0], hidden_dim)
         self.Q2 = QFunction(self.encoder.feature_dim, action_shape[0], hidden_dim)

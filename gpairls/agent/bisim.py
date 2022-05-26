@@ -41,6 +41,7 @@ class BisimAgent:
         critic_beta=0.9,
         critic_tau=0.005,
         critic_target_update_freq=2,
+        encoder_type="cnn",
         encoder_feature_dim=config.ENCODER_FEATURE_DIM,
         encoder_lr=config.ENCODER_LR,
         encoder_tau=0.005,
@@ -64,6 +65,7 @@ class BisimAgent:
             obs_shape,
             action_shape,
             hidden_dim,
+            encoder_type,
             encoder_feature_dim,
             actor_log_std_min,
             actor_log_std_max,
@@ -73,6 +75,7 @@ class BisimAgent:
             obs_shape,
             action_shape,
             hidden_dim,
+            encoder_type,
             encoder_feature_dim,
         ).to(device)
 
@@ -80,6 +83,7 @@ class BisimAgent:
             obs_shape,
             action_shape,
             hidden_dim,
+            encoder_type,
             encoder_feature_dim,
         ).to(device)
 
