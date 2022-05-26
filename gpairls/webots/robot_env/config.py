@@ -1,3 +1,7 @@
+"""
+Webots robot environment config
+"""
+
 # milliseconds
 CONTROL_TIMESTEP = 100
 
@@ -10,5 +14,5 @@ STEP_REWARD = -1.
 # reward for reaching the goal
 GOAL_REWARD = 100.0
 
-# distance (m) under which the goal is considered reached
+# distance (meters) under which the goal is considered reached
 GOAL_DISTANCE_THRESHOLD = 0.1
