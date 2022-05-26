@@ -77,18 +77,18 @@ class EpuckSupervisor:
         """
         # RGB image, shape [H, W, C]
         img = np.array(self.camera.getImageArray())
-        img = np.transpose(img, (1, 0, 2))
+        img = np.transpose(img, (2, 1, 0))
 
         # depth image, shape [H, W, 1]
         depth = np.frombuffer(
             self.rangefinder.getRangeImage(data_type="buffer"), dtype=np.float32
         )
-        depth = np.reshape(depth, (*img.shape[:2], 1))
+        depth = np.reshape(depth, (1, *img.shape[:2]))
         depth = depth / self.rangefinder_max_range * 255
         depth = np.clip(depth, 0, 255).astype(np.uint8)
 
         # concatenate
-        img = np.concatenate((img, depth), axis=2)
+        img = np.concatenate((img, depth), axis=0)
 
         return img
 
@@ -119,12 +119,6 @@ class EpuckSupervisor:
         self._reset_motors()
         self.step()
 
-    def _reset_motors(self):
-        self.left_motor.setPosition(float("inf"))
-        self.right_motor.setPosition(float("inf"))
-        self.left_motor.setVelocity(0.0)
-        self.right_motor.setVelocity(0.0)
-
     def compute_distance_to_goal(self):
         """
         Compute the distance to the goal.
@@ -135,3 +129,9 @@ class EpuckSupervisor:
         robot_pos = np.array(self.robot.getSelf().getPosition())
         dist = np.linalg.norm(robot_pos - self.goal_pos)
         return dist
+
+    def _reset_motors(self):
+        self.left_motor.setPosition(float("inf"))
+        self.right_motor.setPosition(float("inf"))
+        self.left_motor.setVelocity(0.0)
+        self.right_motor.setVelocity(0.0)

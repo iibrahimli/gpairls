@@ -77,17 +77,17 @@ class RobotEnv(gym.Env):
             self.controller.move(action)
         else:
             done = True
-        
+
         # check if max steps reached
         if self.step_count == self.max_steps:
             done = True
-        
+
         # check if goal is reached
         goal_dist = self.controller.compute_distance_to_goal()
         if goal_dist < config.GOAL_DISTANCE_THRESHOLD:
             done = True
             reward = config.GOAL_REWARD
-        
+
         observation = self._get_obs()
 
         if return_info:
@@ -106,11 +106,13 @@ class RobotEnv(gym.Env):
             axes[0].set_title("RGB image")
             axes[1].set_title("Depth image")
             self.rgb_axis_image = axes[0].imshow([[0]], vmin=0, vmax=255)
-            self.depth_axis_image = axes[1].imshow([[0]], cmap="gray_r", vmin=0, vmax=255)
+            self.depth_axis_image = axes[1].imshow(
+                [[0]], cmap="gray_r", vmin=0, vmax=255
+            )
             plt.ion()
         obs = self._get_obs()
-        self.rgb_axis_image.set_data(obs[..., :3])
-        self.depth_axis_image.set_data(obs[..., 3])
+        self.rgb_axis_image.set_data(obs[:3, ...].transpose(1, 2, 0))
+        self.depth_axis_image.set_data(obs[3])
         plt.pause(config.CONTROL_TIMESTEP / 1000)
 
     def close(self):
