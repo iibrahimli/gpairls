@@ -15,6 +15,7 @@ import numpy as np
 
 import config
 import utils
+from webots import RobotEnv
 from ppr import PPR
 from log import Logger
 from experts import MountainCarExpert
@@ -158,7 +159,8 @@ if __name__ == "__main__":
 
     ENV_NAME = "MountainCarContinuous-v0"
 
-    env = gym.make(ENV_NAME)
+    # env = gym.make(ENV_NAME)
+    env = RobotEnv()
     env.seed(config.SEED)
 
     eval_env = gym.make(ENV_NAME)
