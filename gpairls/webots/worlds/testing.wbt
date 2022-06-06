@@ -2,14 +2,14 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.6796416412345233 0.0011202377010891436 0.7335434442264047 3.139178649643797
-  position 0.14824238735311124 -0.10523295918253173 2.8637041962583614
+  orientation -0.6796395324520235 0.0011202169697937503 0.73354539807863 3.1391788073665454
+  position 0.14824238735311124 -0.10523295918253162 2.8637041962583614
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
-RectangleArena {
+DEF arena RectangleArena {
   floorSize 1 2
 }
 SolidBox {
@@ -63,6 +63,12 @@ DEF robot Robot {
   translation 0 -0.85 0
   rotation 0 0 1 1.5708
   children [
+    TouchSensor {
+      translation 0 0 0.06
+      boundingObject Box {
+        size 0.075 0.075 0.01
+      }
+    }
     RangeFinder {
       translation 0.025 0 0.03
       name "rangefinder"
@@ -87,7 +93,7 @@ DEF robot Robot {
         }
       ]
       endPoint DEF EPUCK_LEFT_WHEEL Solid {
-        translation 0 0.02599999999999997 0.02
+        translation 0 0.025999999999999978 0.02
         rotation 0 1 0 0
         children [
           DEF EPUCK_WHEEL Transform {
