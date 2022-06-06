@@ -2,6 +2,7 @@
 OpenAI Gym environment.
 """
 
+from typing import Iterable
 import gym
 import numpy as np
 import matplotlib.pyplot as plt
@@ -40,6 +41,7 @@ class RobotEnv(gym.Env):
 
         # maximum steps per episode
         self.max_steps = config.MAX_STEPS
+        self._max_episode_steps = self.max_steps
 
         # current env step
         self.step_count = 0
@@ -48,7 +50,7 @@ class RobotEnv(gym.Env):
         self.rgb_axis_image = None
         self.depth_axis_image = None
 
-    def reset(self, seed=None, return_info=False, options=None):
+    def reset(self, seed=None):
         """
         Reset the environment.
         """
@@ -58,22 +60,20 @@ class RobotEnv(gym.Env):
         self.controller.reset()
 
         observation = self._get_obs()
-        if return_info:
-            return (observation, self._get_info())
-        else:
-            return observation
+        return observation
 
-    def step(self, action, return_info=False):
+    def step(self, action):
         """
         Perform one action in the environment.
         """
-
         done = False
         reward = config.STEP_REWARD
         self.step_count += 1
 
         # move in simulation & check if sim ended
         if self.controller.step() != -1:
+            if isinstance(action, Iterable):
+                action = action[0]
             self.controller.move(action)
         else:
             done = True
@@ -82,49 +82,72 @@ class RobotEnv(gym.Env):
         if self.step_count == self.max_steps:
             done = True
 
-        # check if goal is reached
-        goal_dist = self.controller.compute_distance_to_goal()
-        if goal_dist < config.GOAL_DISTANCE_THRESHOLD:
+        # check collision
+        if not done and self.controller.is_collided():
+            reward = config.COLLISION_REWARD
             done = True
-            reward = config.GOAL_REWARD
+
+        # check if goal is reached
+        if not done:
+            goal_dist = self.controller.compute_distance_to_goal()
+            if goal_dist < config.GOAL_DISTANCE_THRESHOLD:
+                done = True
+                reward = config.GOAL_REWARD
 
         observation = self._get_obs()
 
-        if return_info:
-            return (observation, reward, done, self._get_info())
-        else:
-            return (observation, reward, done)
+        return (observation, reward, done, self._get_info())
 
-    def render(self):
+    def render(self, show_occupancy_grid=False):
         """
         Render the environment.
         """
         if self.rgb_axis_image is None:
             # create figure for observation
-            fig, axes = plt.subplots(1, 2, figsize=(6, 3))
+            n_cols = 2 + int(show_occupancy_grid)
+            fig, axes = plt.subplots(
+                1,
+                n_cols,
+                figsize=(3 * n_cols, 3),
+                gridspec_kw={"width_ratios": [1, 1, 2][:n_cols]},
+            )
             fig.suptitle("Observation")
+
             axes[0].set_title("RGB image")
-            axes[1].set_title("Depth image")
             self.rgb_axis_image = axes[0].imshow([[0]], vmin=0, vmax=255)
+
+            axes[1].set_title("Depth image")
             self.depth_axis_image = axes[1].imshow(
                 [[0]], cmap="gray_r", vmin=0, vmax=255
             )
+
+            if show_occupancy_grid:
+                axes[2].set_title("Occupancy grid")
+                self.occupancy_axis_image = axes[2].imshow([[0, 0]], vmin=0, vmax=255)
+
             plt.ion()
         obs = self._get_obs()
         self.rgb_axis_image.set_data(obs[:3, ...].transpose(1, 2, 0))
         self.depth_axis_image.set_data(obs[3])
+        if show_occupancy_grid:
+            self.occupancy_axis_image.set_data(self.controller.render_occupancy_grid())
         plt.pause(config.CONTROL_TIMESTEP / 1000)
 
     def close(self):
         self.ax_im = None
         plt.close("all")
         del self.controller
+    
+    def get_expert_action(self):
+        """
+        Get the expert action from current state.
+        """
+        return self.controller.get_expert_action()
 
     def _get_obs(self):
         """
         Get the observation from current state.
         """
-
         img = self.controller.get_cam_image()
         return img
 
