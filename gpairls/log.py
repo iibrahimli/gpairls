@@ -5,7 +5,7 @@ Taken from DBC code (https://github.com/facebookresearch/deep_bisim4control),
 modified formatting and removed image/video logging.
 """
 
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 from collections import defaultdict
 import json
 import os
@@ -107,7 +107,7 @@ class Logger(object):
             tb_dir = os.path.join(log_dir, "tb")
             if os.path.exists(tb_dir):
                 shutil.rmtree(tb_dir)
-            self._sw = SummaryWriter(tb_dir)
+            # self._sw = SummaryWriter(tb_dir)
         else:
             self._sw = None
         self._train_mg = MetersGroup(
