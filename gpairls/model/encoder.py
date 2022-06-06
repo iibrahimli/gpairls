@@ -92,7 +92,7 @@ class CNNEncoder(nn.Module):
         for i in range(num_layers - 1):
             self.convs.append(nn.Conv2d(num_filters, num_filters, 3, stride=1))
 
-        out_dim = {2: 39, 4: 35, 6: 31}[num_layers]
+        out_dim = {2: 61}[num_layers]
         self.fc = nn.Linear(num_filters * out_dim * out_dim, self.feature_dim)
         self.ln = nn.LayerNorm(self.feature_dim)
 
@@ -131,7 +131,7 @@ class CNNEncoder(nn.Module):
 
         return out
 
-    def copy_conv_weights_from(self, source):
+    def copy_weights_from(self, source):
         """Tie convolutional layers"""
         # only tie conv layers
         for i in range(self.num_layers):
