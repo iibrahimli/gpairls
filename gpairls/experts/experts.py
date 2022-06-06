@@ -10,9 +10,7 @@ from .competence import ExpertCompetenceConfig, ExpertCompetencePreset
 
 
 class Expert(ABC):
-    def __init__(
-        self, env_name: str, competence: ExpertCompetenceConfig, name: str
-    ) -> None:
+    def __init__(self, env_name: str, competence: ExpertCompetenceConfig) -> None:
         """
         Expert advisor model.
 
