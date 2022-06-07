@@ -79,7 +79,7 @@ class RobotEnv(gym.Env):
             done = True
 
         # check if max steps reached
-        if self.step_count == self.max_steps:
+        if not done and self.step_count == self.max_steps:
             done = True
 
         # check collision
