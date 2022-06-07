@@ -5,6 +5,7 @@ Based on DBC code (https://github.com/facebookresearch/deep_bisim4control)
 with modifications for MLP encoder
 """
 
+import wandb
 import numpy as np
 import torch
 import torch.nn as nn
@@ -173,6 +174,7 @@ class BisimAgent:
             current_Q2, target_Q
         )
         L.log("train_critic/loss", critic_loss, step)
+        wandb.log({"train": {"critic_loss": critic_loss}}, step=step)
 
         # Optimize the critic
         self.critic_optimizer.zero_grad()
@@ -195,6 +197,7 @@ class BisimAgent:
             dim=-1
         )
         L.log("train_actor/entropy", entropy.mean(), step)
+        wandb.log({"train": {"actor_loss": actor_loss}}, step=step)
 
         # optimize the actor
         self.actor_optimizer.zero_grad()
@@ -243,6 +246,8 @@ class BisimAgent:
         bisimilarity = r_dist + self.discount * transition_dist
         loss = (z_dist - bisimilarity).pow(2).mean()
         L.log("train_ae/encoder_loss", loss, step)
+        wandb.log({"train": {"encoder_loss": loss}}, step=step)
+
         return loss
 
     def update_transition_reward_model(self, obs, action, next_obs, reward, L, step):
