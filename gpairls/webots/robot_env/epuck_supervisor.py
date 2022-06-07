@@ -158,7 +158,7 @@ class EpuckSupervisor:
     def get_shortest_path(self, robot_pos):
         # re-compute path if robot position has changed a lot from last time
         robot_grid_pos = self._world_to_grid_coords(*robot_pos)
-        if self.sp_cache is not None:
+        if self.sp_cache is not None and len(self.sp_cache) > 1:
             if (
                 abs(robot_grid_pos[0] - self.sp_cache[0][0])
                 + abs(robot_grid_pos[1] - self.sp_cache[0][1])
