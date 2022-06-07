@@ -5,28 +5,39 @@ Based on BPA code (https://github.com/mwizard1010/robot-control) with
 refactoring, support for bisimulation-based retrieval, and type annotations.
 """
 
-from typing import Any, Dict, Tuple
+from typing import Any, List, Tuple
 from dataclasses import dataclass
 
 import numpy as np
 
 
+# TODO: maybe vary this over the course of training?
+# 2 embeddings having distance less than this are considered the same
+_EMBEDDING_DIST_THRESHOLD = 0.01
+
+
+def _embedding_dist(emb_a: np.ndarray, emb_b: np.ndarray) -> float:
+    """Euclidean distance between embeddings"""
+    return np.linalg.norm(emb_a - emb_b)
+
+
 @dataclass
 class ActionNode:
+    emb: np.ndarray
     action: Any
     prob: float
 
     def __repr__(self) -> str:
-        return f"AP(a={self.action}, p={self.prob:.2f})"
+        return f"AP(emb={self.emb} a={self.action}, p={self.prob:.2f})"
 
 
 class PPR:
     """
-    Probabilistic Policy Reuse class.
+    Probabilistic Policy Reuse class. Stores embeddings and associated advice
+    (actions), retrieves the advice based on embedding distance and 
 
     Attributes:
-        vals: A dictionary of key-value pairs where the key is an identifier
-            and the value is an ActionNode object.
+        vals: A list of tuples of (embedding (np arrays), ActionNode).
         init_prob: The initial probability of an action being chosen.
         decay_rate: The rate at which the probability is reduced on each step.
     """
@@ -35,7 +46,7 @@ class PPR:
         """
         Initialize a PPR object with given initial probability and decay rate.
         """
-        self.vals: Dict[Any, ActionNode] = {}
+        self.vals: List[ActionNode] = []
         self.init_prob = init_prob
         self.decay_rate = decay_rate
 
@@ -44,43 +55,49 @@ class PPR:
 
     def step(self):
         """
-        Reduce the probability of each action by the decay rate, without
-        going below 0.
+        Reduce the probability of each action by the decay rate and remove ones
+        where probability reaches 0.
         """
-        for key in self.vals:
-            ap = self.vals[key]
-            ap.prob = max(ap.prob - self.decay_rate, 0)
+        for i in range(len(self.vals)):
+            self.vals[i].prob -= self.decay_rate
+            if self.vals[i].prob <= 0:
+                self.vals.pop(i)
 
-    def add(self, key: Any, action: Any):
+    def add(self, emb: np.ndarray, action: Any):
         """
         Add a new action.
         """
-        self.vals[tuple(key)] = ActionNode(
-            action=action, prob=self.init_prob
-        )
+        # reset probability and action if embedding is already present
+        for i in range(len(self.vals)):
+            if _embedding_dist(self.vals[i].emb, emb) < _EMBEDDING_DIST_THRESHOLD:
+                self.vals[i].action = action
+                self.vals[i].prob = self.init_prob
+                return
+        self.vals.append(ActionNode(emb, action, self.init_prob))
 
-    def get(self, key: Any) -> Tuple[Any, float]:
+    def get(self, emb: np.ndarray) -> Tuple[Any, float]:
         """
-        Get the action and its probability for the given key, or (None, 0) if
-        the key is not present.
+        Get the action and its probability for the given emb, or (None, 0) if
+        the emb is not present.
         """
-        key = tuple(key)
-        if key in self.vals:
-            return self.vals[key].action, self.vals[key].prob
-        else:
-            # select action with lowest Euclidean distance between embeddings
-            min_dist = np.inf
-            min_embed = None
-            dist_sum = 0
-            count = 0
-            for emb in self.vals:
-                dist = np.linalg.norm(np.array(emb) - np.array(key))
-                dist_sum += dist
-                count += 1
-                if dist < min_dist:
-                    min_dist = dist
-                    min_embed = emb
-            if count > 0 and min_dist > (dist_sum / count) / 2:
-                return self.vals[min_embed].action, self.vals[min_embed].prob
-            else:
-                return None, 0
+        if len(self.vals) == 0:
+            return None, 0.
+
+        distances = [_embedding_dist(emb, v.emb) for v in self.vals]
+        min_idx = np.argmin(distances)
+        min_dist = distances[min_idx]
+
+        # no good embeddings found
+        if min_dist > _EMBEDDING_DIST_THRESHOLD:
+            return None, 0.
+
+        return self.vals[min_idx].action, self.vals[min_idx].prob
+
+
+ppr = PPR(init_prob=0.8, decay_rate=0.05)
+
+for i in range(3):
+    emb = np.random.randn(3)
+    ppr.add(emb, np.random.uniform(0, 2) - 1)
+    ppr.step()
+    print(ppr)
