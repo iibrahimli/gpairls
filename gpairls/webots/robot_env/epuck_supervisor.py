@@ -155,7 +155,7 @@ class EpuckSupervisor:
         dist = np.linalg.norm(robot_pos - np.array(self.goal_pos))
         return dist
 
-    def compute_shortest_path(self, robot_pos):
+    def get_shortest_path(self, robot_pos):
         # re-compute path if robot position has changed a lot from last time
         robot_grid_pos = self._world_to_grid_coords(*robot_pos)
         if self.sp_cache is not None:
@@ -199,7 +199,7 @@ class EpuckSupervisor:
         robot_angle = robot_orientation[-1]  # radians, x-axis is "down"
 
         # compute shortest path
-        shortest_path = self.compute_shortest_path(robot_pos)
+        shortest_path = self.get_shortest_path(robot_pos)
         if len(shortest_path) < MIN_NEXT_STEPS:
             return None
 
@@ -251,7 +251,7 @@ class EpuckSupervisor:
         _mark_position(occ_grid_img, *robot_grid_pos, 5, 2)
         _mark_position(occ_grid_img, *goal_grid_pos, 5, 3)
 
-        shortest_path = self.compute_shortest_path(
+        shortest_path = self.get_shortest_path(
             tuple(self.robot.getSelf().getPosition())[:2]
         )
         for grid_pos in shortest_path:
