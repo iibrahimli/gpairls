@@ -113,15 +113,16 @@ class Actor(nn.Module):
         return mu, pi, log_pi, log_std
 
     def log(self, L, step, log_freq):
-        if step % log_freq != 0:
-            return
+        pass
+        # if step % log_freq != 0:
+        #     return
 
-        for k, v in self.outputs.items():
-            L.log_histogram("train_actor/%s_hist" % k, v, step)
+        # for k, v in self.outputs.items():
+        #     L.log_histogram("train_actor/%s_hist" % k, v, step)
 
-        L.log_param("train_actor/fc1", self.trunk[0], step)
-        L.log_param("train_actor/fc2", self.trunk[2], step)
-        L.log_param("train_actor/fc3", self.trunk[4], step)
+        # L.log_param("train_actor/fc1", self.trunk[0], step)
+        # L.log_param("train_actor/fc2", self.trunk[2], step)
+        # L.log_param("train_actor/fc3", self.trunk[4], step)
 
 
 class QFunction(nn.Module):
@@ -182,14 +183,15 @@ class Critic(nn.Module):
         return q1, q2
 
     def log(self, L, step, log_freq):
-        if step % log_freq != 0:
-            return
+        pass
+        # if step % log_freq != 0:
+        #     return
 
-        self.encoder.log(L, step, log_freq)
+        # self.encoder.log(L, step, log_freq)
 
-        for k, v in self.outputs.items():
-            L.log_histogram("train_critic/%s_hist" % k, v, step)
+        # for k, v in self.outputs.items():
+        #     L.log_histogram("train_critic/%s_hist" % k, v, step)
 
-        for i in range(3):
-            L.log_param("train_critic/q1_fc%d" % i, self.Q1.trunk[i * 2], step)
-            L.log_param("train_critic/q2_fc%d" % i, self.Q2.trunk[i * 2], step)
+        # for i in range(3):
+        #     L.log_param("train_critic/q1_fc%d" % i, self.Q1.trunk[i * 2], step)
+        #     L.log_param("train_critic/q2_fc%d" % i, self.Q2.trunk[i * 2], step)
