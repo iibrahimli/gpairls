@@ -47,10 +47,6 @@ def get_action(env, agent, policy_reuse, obs, expert_config, epsilon):
             policy_reuse.add(emb, action)
         return action
     
-    # exploration
-    if np.random.random() <= epsilon:
-        return env.action_space.sample()
-
     emb = get_embedding(agent, obs)
 
     # try to get action from PPR
@@ -59,6 +55,10 @@ def get_action(env, agent, policy_reuse, obs, expert_config, epsilon):
         # if can use ppr action, use it
         if ppr_action is not None and (np.random.rand() <= use_prob):
             return ppr_action
+    
+    # exploration
+    if np.random.random() <= epsilon:
+        return env.action_space.sample()
 
     # get action from agent
     with utils.eval_mode(agent):
@@ -115,32 +115,33 @@ def run_training(agent, env, policy_reuse, expert_config):
 
     L = Logger(config.LOG_DIR, use_tb=False)
 
-    epsilon = 0.25
+    epsilon = 0.2
     episode, episode_reward, done = 0, 0, True
     start_time = time.time()
     for step in range(config.TRAINING_STEPS):
+
+        # evaluate agent periodically
+        if step % config.EVAL_FREQ == 0:
+            L.log("eval/episode", episode, step)
+            mean_reward, mean_length = evaluate(env, agent, L, step)
+            agent.save(config.MODEL_DIR, step)
+            # replay_buffer.save(buffer_dir)
+
+            wandb.log(
+                {
+                    "eval": {
+                        "episode_reward": mean_reward,
+                        "episode_length": mean_length,
+                    }
+                },
+                step=step,
+            )
+
         if done:
             if step > 0:
                 L.log("train/duration", time.time() - start_time, step)
                 start_time = time.time()
                 L.dump(step)
-
-            # evaluate agent periodically
-            if step % config.EVAL_FREQ == 0:
-                L.log("eval/episode", episode, step)
-                mean_reward, mean_length = evaluate(env, agent, L, step)
-                agent.save(config.MODEL_DIR, step)
-                # replay_buffer.save(buffer_dir)
-
-                wandb.log(
-                    {
-                        "eval": {
-                            "episode_reward": mean_reward,
-                            "episode_length": mean_length,
-                        }
-                    },
-                    step=step,
-                )
 
             L.log("train/episode_reward", episode_reward, step)
 
@@ -189,7 +190,7 @@ def run_training(agent, env, policy_reuse, expert_config):
 
         obs = next_obs
         episode_step += 1
-        epsilon *= 0.999
+        epsilon *= 0.99
         if policy_reuse is not None:
             policy_reuse.step()
             wandb.log({"ppr_size": len(policy_reuse.vals)}, step=step)
