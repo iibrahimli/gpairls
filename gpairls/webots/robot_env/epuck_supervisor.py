@@ -159,7 +159,11 @@ class EpuckSupervisor:
         # re-compute path if robot position has changed a lot from last time
         robot_grid_pos = self._world_to_grid_coords(*robot_pos)
         if self.sp_cache is not None:
-            if np.sum(np.abs(robot_grid_pos - self.sp_cache[0])) > 4:
+            if (
+                abs(robot_grid_pos[0] - self.sp_cache[0][0])
+                + abs(robot_grid_pos[1] - self.sp_cache[0][1])
+                > 4
+            ):
                 self.sp_cache = None
 
         if self.sp_cache is None:
