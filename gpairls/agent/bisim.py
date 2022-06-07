@@ -174,7 +174,7 @@ class BisimAgent:
             current_Q2, target_Q
         )
         L.log("train_critic/loss", critic_loss, step)
-        wandb.log({"train": {"critic_loss": critic_loss}}, step=step)
+        wandb.log({"train": {"critic_loss": critic_loss.detach().item()}}, step=step)
 
         # Optimize the critic
         self.critic_optimizer.zero_grad()
