@@ -13,7 +13,7 @@ import numpy as np
 
 # TODO: maybe vary this over the course of training?
 # 2 embeddings having distance less than this are considered the same
-_EMB_DIST_THRESHOLD = 0.01
+_EMB_DIST_THRESHOLD = 0.1
 
 
 def _embedding_dist(emb_a: np.ndarray, emb_b: np.ndarray) -> float:
