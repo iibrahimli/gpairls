@@ -6,17 +6,17 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from .competence import ExpertCompetenceConfig, ExpertCompetencePreset
+from .competence import ExpertConfig, ExpertPresets
 
 
 class Expert(ABC):
-    def __init__(self, env_name: str, competence: ExpertCompetenceConfig) -> None:
+    def __init__(self, env_name: str, competence: ExpertConfig) -> None:
         """
         Expert advisor model.
 
         Args:
             env_name (str): Name of the target Gym environment.
-            competence (ExpertCompetenceConfig): Expert competence.
+            competence (ExpertConfig): Expert competence.
         """
         self.env_name = env_name
         self.competence = competence
@@ -35,7 +35,7 @@ class MountainCarExpert(Expert):
     def __init__(self) -> None:
         super().__init__(
             env_name="MountainCarContinuous-v0",
-            competence=ExpertCompetencePreset.REALISTIC,
+            competence=ExpertPresets.REALISTIC,
         )
 
     def get_action(self, obs):

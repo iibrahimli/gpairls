@@ -6,9 +6,9 @@ from dataclasses import dataclass
 
 
 @dataclass
-class ExpertCompetenceConfig:
+class ExpertConfig:
     """
-    Parameters for experts of different competence
+    Parameters for experts
     """
 
     # type of expert this config refers to
@@ -21,17 +21,17 @@ class ExpertCompetenceConfig:
     accuracy: float
 
 
-class ExpertCompetencePreset:
+class ExpertPresets:
     """
     Source: https://arxiv.org/pdf/2102.02441.pdf
     """
 
-    OPTIMISTIC = ExpertCompetenceConfig(
+    OPTIMISTIC = ExpertConfig(
         name="optimistic", availability=1.0, accuracy=1.0
     )
-    REALISTIC = ExpertCompetenceConfig(
+    REALISTIC = ExpertConfig(
         name="realistic", availability=0.94870, accuracy=0.47316
     )
-    PESSIMISTIC = ExpertCompetenceConfig(
+    PESSIMISTIC = ExpertConfig(
         name="pessimistic", availability=0.47435, accuracy=0.23658
     )
