@@ -138,11 +138,11 @@ class RobotEnv(gym.Env):
         plt.close("all")
         del self.controller
     
-    def get_expert_action(self):
+    def get_expert_action(self, expert_config):
         """
         Get the expert action from current state.
         """
-        return self.controller.get_expert_action()
+        return self.controller.get_expert_action(expert_config)
 
     def _get_obs(self):
         """
