@@ -16,6 +16,7 @@ from controller import Supervisor
 
 from . import config
 from .utils import *
+from ...experts import ExpertConfig
 
 
 # TODO:
@@ -46,7 +47,7 @@ class EpuckSupervisor:
 
         # initialize motors
         self._reset_motors()
-        
+
         # initialize touch sensor
         self.touch_sensor.enable(timestep)
 
@@ -69,6 +70,9 @@ class EpuckSupervisor:
             self.occupancy_grid = np.load(config.OCCUPANCY_GRID_PATH)
         else:
             self.occupancy_grid = self._compute_occupancy_grid()
+
+        # shortest path cache
+        self.sp_cache = None
 
         # step once so that camera image is available
         self.step()
@@ -152,7 +156,23 @@ class EpuckSupervisor:
         dist = np.linalg.norm(robot_pos - np.array(self.goal_pos))
         return dist
 
-    def get_expert_action(self):
+    def compute_shortest_path(self, robot_pos):
+        # re-compute path if robot position has changed a lot from last time
+        robot_grid_pos = self._world_to_grid_coords(*robot_pos)
+        if self.sp_cache is not None:
+            if np.sum(np.abs(robot_grid_pos - self.sp_cache[0])) > 4:
+                self.sp_cache = None
+
+        if self.sp_cache is None:
+            self.sp_cache = compute_shortest_path_astar(
+                self.occupancy_grid,
+                robot_grid_pos,
+                self._world_to_grid_coords(*tuple(self.goal_pos)[:2]),
+            )
+
+        return self.sp_cache
+
+    def get_expert_action(self, expert_config: ExpertConfig):
         """
         Choose an expert action for current state of the simulation (not
         exactly observation). The best action i.e. direction is assumed to be
@@ -164,25 +184,26 @@ class EpuckSupervisor:
             position (the latter shouldn't happen).
         """
 
+        if np.random.uniform() > expert_config.availability:
+            return None
+
+        if np.random.uniform() > expert_config.accuracy:
+            return np.random.uniform(-1, 1)
+
         MIN_NEXT_STEPS = 5
         robot_pos = tuple(self.robot.getSelf().getPosition())[:2]
         robot_orientation = self.robot.getSelf().getField("rotation").getSFRotation()
-        robot_angle = robot_orientation[-1] # radians, x-axis is "down"
+        robot_angle = robot_orientation[-1]  # radians, x-axis is "down"
 
         # compute shortest path
-        shortest_path = compute_shortest_path_astar(
-            self.occupancy_grid,
-            self._world_to_grid_coords(*robot_pos),
-            self._world_to_grid_coords(*tuple(self.goal_pos)[:2]),
-        )
+        shortest_path = self.compute_shortest_path(robot_pos)
         if len(shortest_path) < MIN_NEXT_STEPS:
             return None
 
         # compute direction towards the next grid cell
-        next_x, next_y = self._grid_to_world_coords(*shortest_path[MIN_NEXT_STEPS-1])
+        next_x, next_y = self._grid_to_world_coords(*shortest_path[MIN_NEXT_STEPS - 1])
         next_angle = math.atan2(next_y - robot_pos[1], next_x - robot_pos[0])
         # next_angle -= math.pi / 2  # rotate to x-axis
-
 
         # robot angle and next angle are in range [-pi, pi]
         # therefore, the angle difference is in range [-2pi, 2pi]
@@ -192,7 +213,7 @@ class EpuckSupervisor:
             angle_diff -= 2 * math.pi
         elif angle_diff < -math.pi:
             angle_diff += 2 * math.pi
-        
+
         # normalize angle difference to [-1, 1]
         angle_diff /= math.pi
 
@@ -200,7 +221,7 @@ class EpuckSupervisor:
             return -angle_diff
         else:
             return np.sign(-angle_diff)
-    
+
     def is_collided(self):
         """
         Check if the robot is collided.
@@ -227,10 +248,8 @@ class EpuckSupervisor:
         _mark_position(occ_grid_img, *robot_grid_pos, 5, 2)
         _mark_position(occ_grid_img, *goal_grid_pos, 5, 3)
 
-        shortest_path = compute_shortest_path_astar(
-            self.occupancy_grid,
-            robot_grid_pos,
-            goal_grid_pos,
+        shortest_path = self.compute_shortest_path(
+            tuple(self.robot.getSelf().getPosition())[:2]
         )
         for grid_pos in shortest_path:
             _mark_position(occ_grid_img, *grid_pos, 2, 4)
@@ -279,7 +298,7 @@ class EpuckSupervisor:
 
         # move touch sensor to the center of each grid cell to check for
         # collisions, remove the object afterwards
-        
+
         self.robot.step(1)
 
         for i in range(occ_grid.shape[0]):
