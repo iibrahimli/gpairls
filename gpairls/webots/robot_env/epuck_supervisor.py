@@ -16,7 +16,6 @@ from controller import Supervisor
 
 from . import config
 from .utils import *
-from ...experts import ExpertConfig
 
 
 # TODO:
@@ -172,7 +171,7 @@ class EpuckSupervisor:
 
         return self.sp_cache
 
-    def get_expert_action(self, expert_config: ExpertConfig):
+    def get_expert_action(self, expert_config):
         """
         Choose an expert action for current state of the simulation (not
         exactly observation). The best action i.e. direction is assumed to be
