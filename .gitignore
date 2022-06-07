@@ -4,4 +4,4 @@ __pycache__/
 logs/
 **/*.log
 .ipynb_checkpoints/
-.wandb/
+wandb/
