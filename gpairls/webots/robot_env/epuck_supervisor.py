@@ -3,11 +3,15 @@ Supervisor class for the epuck. Acts as an intermediary between the
 gym environment and the experiment world in Webots.
 """
 
+import sys
 import math
 from pathlib import Path
 
 import numpy as np
 from skimage.transform import resize
+
+# TODO: ew
+sys.path.insert(0, "/Applications/Webots.app/lib/controller/python39")
 from controller import Supervisor
 
 from . import config
