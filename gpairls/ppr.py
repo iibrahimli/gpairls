@@ -13,7 +13,7 @@ import numpy as np
 
 # TODO: maybe vary this over the course of training?
 # 2 embeddings having distance less than this are considered the same
-_EMBEDDING_DIST_THRESHOLD = 0.01
+_EMB_DIST_THRESHOLD = 0.01
 
 
 def _embedding_dist(emb_a: np.ndarray, emb_b: np.ndarray) -> float:
@@ -34,7 +34,7 @@ class ActionNode:
 class PPR:
     """
     Probabilistic Policy Reuse class. Stores embeddings and associated advice
-    (actions), retrieves the advice based on embedding distance and 
+    (actions), retrieves the advice based on embedding distance and
 
     Attributes:
         vals: A list of tuples of (embedding (np arrays), ActionNode).
@@ -60,8 +60,7 @@ class PPR:
         """
         for i in range(len(self.vals)):
             self.vals[i].prob -= self.decay_rate
-            if self.vals[i].prob <= 0:
-                self.vals.pop(i)
+        self.vals = [v for v in self.vals if v.prob > 0]
 
     def add(self, emb: np.ndarray, action: Any):
         """
@@ -69,7 +68,7 @@ class PPR:
         """
         # reset probability and action if embedding is already present
         for i in range(len(self.vals)):
-            if _embedding_dist(self.vals[i].emb, emb) < _EMBEDDING_DIST_THRESHOLD:
+            if _embedding_dist(self.vals[i].emb, emb) < _EMB_DIST_THRESHOLD:
                 self.vals[i].action = action
                 self.vals[i].prob = self.init_prob
                 return
@@ -81,23 +80,14 @@ class PPR:
         the emb is not present.
         """
         if len(self.vals) == 0:
-            return None, 0.
+            return None, 0.0
 
         distances = [_embedding_dist(emb, v.emb) for v in self.vals]
         min_idx = np.argmin(distances)
         min_dist = distances[min_idx]
 
         # no good embeddings found
-        if min_dist > _EMBEDDING_DIST_THRESHOLD:
-            return None, 0.
+        if min_dist > _EMB_DIST_THRESHOLD:
+            return None, 0.0
 
         return self.vals[min_idx].action, self.vals[min_idx].prob
-
-
-ppr = PPR(init_prob=0.8, decay_rate=0.05)
-
-for i in range(3):
-    emb = np.random.randn(3)
-    ppr.add(emb, np.random.uniform(0, 2) - 1)
-    ppr.step()
-    print(ppr)
