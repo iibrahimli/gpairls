@@ -7,9 +7,10 @@ environment, custom stats logging, and no decoders.
 """
 
 import time
+import argparse
 from datetime import datetime
 
-import gym
+import wandb
 import torch
 import numpy as np
 
@@ -17,15 +18,56 @@ import config
 import utils
 from webots import RobotEnv
 from ppr import PPR
+from experts import ExpertPresets
 from log import Logger
 from agent import BaselineAgent, BisimAgent
-from training_run import TrainingRun
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def evaluate(env, agent, L, step, n_episodes=10):
+def get_embedding(agent, obs):
+    """
+    Get embedding of observation.
+    """
+    if obs.ndim == 3:
+        obs = np.expand_dims(obs, 0)
+    with utils.eval_mode(agent.actor.encoder):
+        emb = agent.actor.encoder(torch.tensor(obs)).detach().cpu().numpy()
+    return emb
+
+
+def get_action(env, agent, policy_reuse, obs, expert_config, epsilon):
+    # try to get expert advice
+    expert_action = env.get_expert_action(expert_config)
+    emb = get_embedding(agent, obs)
+    if expert_action is not None:
+        action = expert_action
+        if policy_reuse is not None:
+            policy_reuse.add(emb, action)
+        return action
+    
+    # exploration
+    if np.random.random() <= epsilon:
+        return env.action_space.sample()
+
+    emb = get_embedding(agent, obs)
+
+    # try to get action from PPR
+    if policy_reuse is not None:
+        ppr_action, use_prob = policy_reuse.get(emb)
+        # if can use ppr action, use it
+        if ppr_action is not None and (np.random.rand() <= use_prob):
+            return ppr_action
+
+    # get action from agent
+    with utils.eval_mode(agent):
+        action = agent.sample_action(obs)
+
+    return action
+
+
+def evaluate(env, agent, L, step, n_episodes=5):
     """
     Evaluate agent on environment, averaged over n_episodes.
     """
@@ -61,7 +103,7 @@ def evaluate(env, agent, L, step, n_episodes=10):
     return mean_reward, mean_length
 
 
-def run_training(agent, env, tr, policy_reuse):
+def run_training(agent, env, policy_reuse, expert_config):
 
     replay_buffer = utils.ReplayBuffer(
         obs_shape=env.observation_space.shape,
@@ -71,9 +113,9 @@ def run_training(agent, env, tr, policy_reuse):
         device=device,
     )
 
-    L = Logger(config.LOG_DIR, use_tb=True)
+    L = Logger(config.LOG_DIR, use_tb=False)
 
-    epsilon = 0.1
+    epsilon = 0.25
     episode, episode_reward, done = 0, 0, True
     start_time = time.time()
     for step in range(config.TRAINING_STEPS):
@@ -84,14 +126,33 @@ def run_training(agent, env, tr, policy_reuse):
                 L.dump(step)
 
             # evaluate agent periodically
-            if episode % config.EVAL_FREQ == 0:
+            if step % config.EVAL_FREQ == 0:
                 L.log("eval/episode", episode, step)
                 mean_reward, mean_length = evaluate(env, agent, L, step)
-                tr.add(episode=episode, mean_episode_reward=mean_reward, mean_episode_length=mean_length)
                 agent.save(config.MODEL_DIR, step)
                 # replay_buffer.save(buffer_dir)
 
+                wandb.log(
+                    {
+                        "eval": {
+                            "episode_reward": mean_reward,
+                            "episode_length": mean_length,
+                        }
+                    },
+                    step=step,
+                )
+
             L.log("train/episode_reward", episode_reward, step)
+
+            wandb.log(
+                {
+                    "train": {
+                        "episode_reward": episode_reward,
+                        "epsilon": epsilon,
+                    }
+                },
+                step=step,
+            )
 
             obs = env.reset()
             done = False
@@ -102,39 +163,17 @@ def run_training(agent, env, tr, policy_reuse):
 
             L.log("train/episode", episode, step)
 
+        # ======= TODO: refactor terrible code below =======
+
         # sample action for data collection
         if step < config.INIT_STEPS:
             action = env.action_space.sample()
         else:
-            # epsilon-greedy exploration
-            if np.random.random() <= epsilon:
-                action = env.action_space.sample()
-            else:
-                # get state embedding
-                with utils.eval_mode(agent.actor.encoder):
-                    emb = agent.actor.encoder(torch.tensor(obs)).detach().cpu().numpy()
-
-                # ask expert
-                # expert_action = expert.get_action(list(obs))
-                expert_action = env.get_expert_action(TODO)
-                if expert_action is not None:
-                    action = expert_action
-                    policy_reuse.add(emb, expert_action)
-                else:
-                    # try to get action from PPR
-                    ppr_action, rate = policy_reuse.get(emb)
-                
-                    # if can use ppr action, use it
-                    if ppr_action is not None and (np.random.rand() < rate):
-                        action = ppr_action
-                    else:
-                        # get action from agent
-                        with utils.eval_mode(agent):
-                            action = agent.sample_action(obs)
+            action = get_action(env, agent, policy_reuse, obs, expert_config, epsilon)
 
         # run training update
         if step >= config.INIT_STEPS:
-            num_updates = config.INIT_STEPS if step == config.INIT_STEPS else 1
+            num_updates = 10 if step == config.INIT_STEPS else 1
             for _ in range(num_updates):
                 agent.update(replay_buffer, L, step)
 
@@ -143,17 +182,32 @@ def run_training(agent, env, tr, policy_reuse):
 
         # allow infinite bootstrap
         done_float = 0.0 if episode_step + 1 == env._max_episode_steps else float(done)
+        # done_float = float(done)
         episode_reward += reward
 
         replay_buffer.add(obs, action, curr_reward, reward, next_obs, done_float)
 
         obs = next_obs
         episode_step += 1
-        epsilon *= 0.99
-        policy_reuse.step()
+        epsilon *= 0.999
+        if policy_reuse is not None:
+            policy_reuse.step()
+            wandb.log({"ppr_size": len(policy_reuse.vals)}, step=step)
 
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        "--agent",
+        type=str,
+        default="baseline",
+        help="which agent to use",
+        choices=["baseline", "nonpersistent", "persistent", "bisim"],
+    )
+    args = parser.parse_args()
+
+    print("Using agent:", args.agent)
 
     utils.set_seed_everywhere(config.SEED)
 
@@ -171,39 +225,53 @@ if __name__ == "__main__":
         device=device,
     )
 
-    dt = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    RUN_NAME = f"{ENV_NAME}_{agent.__class__.__name__}_{dt}"
+    expert_config = ExpertPresets.REALISTIC if args.agent != "baseline" else None
 
-    tr = TrainingRun(
-        RUN_NAME,
-        metadata={
-            "datetime": dt,
-            "env": ENV_NAME,
-            "agent": agent.__class__.__name__,
-            "training_steps": config.TRAINING_STEPS,
-            "eval_freq": config.EVAL_FREQ,
-            "batch_size": config.BATCH_SIZE,
-            "replay_buffer_capacity": config.REPLAY_BUFFER_CAPACITY,
-            "init_steps": config.INIT_STEPS,
-            "hidden_dim": config.HIDDEN_DIM,
-            "actor_lr": config.ACTOR_LR,
-            "critic_lr": config.CRITIC_LR,
-        },
-        tracked_stats=["episode", "mean_episode_reward", "mean_episode_length"],
+    policy_reuse = (
+        PPR(init_prob=0.8, decay_rate=0.01)
+        if args.agent in ("persistent", "bisim")
+        else None
     )
 
-    policy_reuse = PPR(init_prob=0.8, decay_rate=0.05)
+    dt = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    RUN_NAME = f"{ENV_NAME}_{args.agent}_{dt}"
+
+    wandb_config={
+        "datetime": dt,
+        "env": ENV_NAME,
+        "agent": args.agent,
+        "training_steps": config.TRAINING_STEPS,
+        "eval_freq": config.EVAL_FREQ,
+        "batch_size": config.BATCH_SIZE,
+        "replay_buffer_capacity": config.REPLAY_BUFFER_CAPACITY,
+        "init_steps": config.INIT_STEPS,
+        "hidden_dim": config.HIDDEN_DIM,
+        "actor_lr": config.ACTOR_LR,
+        "critic_lr": config.CRITIC_LR,
+    }
+
+    # initialize wandb
+    wandb_run_name = f"RobotEnv-{args.agent}"
+    if expert_config is not None:
+        wandb_run_name += f"-{expert_config.name}"
+    wandb.init(
+        project="gpairls",
+        entity="iibrahimli",
+        name=wandb_run_name,
+        config=wandb_config,
+    )
+    wandb.watch(agent.actor)
 
     # stop when ^C
     try:
-        run_training(agent, env, tr, policy_reuse)
+        run_training(agent, env, policy_reuse, expert_config)
     except KeyboardInterrupt:
         print("Stopping early")
     finally:
+        env.close()
         print("Saving training stats")
-        tr.save(config.LOG_DIR / RUN_NAME)
         print("Done\n")
-    
+
     print("Rendering trained agent in environment")
     obs = env.reset()
     done = False
