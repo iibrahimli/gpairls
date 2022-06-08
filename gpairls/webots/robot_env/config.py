@@ -8,7 +8,7 @@ from pathlib import Path
 CONTROL_TIMESTEP = 100
 
 # max steps per episode (seconds * seconds_per_step)
-MAX_STEPS = round(10 * (1000 / CONTROL_TIMESTEP))
+MAX_STEPS = round(120 * (1000 / CONTROL_TIMESTEP))
 
 # reward for not reaching the goal
 STEP_REWARD = -1.
