@@ -274,7 +274,7 @@ class EpuckSupervisor:
         )[occ_grid_img]
 
         # resize
-        occ_grid_img = resize(occ_grid_img / 255.0, (128, 256))
+        occ_grid_img = resize(occ_grid_img / 255.0, (256, 512))
 
         return occ_grid_img
 
