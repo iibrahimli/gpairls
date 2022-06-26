@@ -270,7 +270,6 @@ if __name__ == "__main__":
         print("Stopping early")
     finally:
         env.close()
-        print("Saving training stats")
         print("Done\n")
 
     print("Rendering trained agent in environment")
