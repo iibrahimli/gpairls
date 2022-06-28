@@ -5,3 +5,4 @@ logs/
 **/*.log
 .ipynb_checkpoints/
 wandb/
+*.pem
