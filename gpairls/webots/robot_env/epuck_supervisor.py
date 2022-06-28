@@ -18,12 +18,6 @@ from . import config
 from .utils import *
 
 
-# TODO:
-# - reset experiment
-# - compute distance to goal
-# - compute reward
-
-
 class EpuckSupervisor:
     def __init__(self, timestep):
         self.robot = Supervisor()
