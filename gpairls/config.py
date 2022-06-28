@@ -43,4 +43,4 @@ ENCODER_LR = 1e-3
 LOG_FREQ = 250
 
 # frequency of evaluation (steps)
-EVAL_FREQ = 250
+EVAL_FREQ = 500
