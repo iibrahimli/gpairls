@@ -1,4 +1,6 @@
 """
+OLD TRAINING SCRIPT
+
 Train all agents for the paper.
 
 Based on DBC code (https://github.com/facebookresearch/deep_bisim4control)
