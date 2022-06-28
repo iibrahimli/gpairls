@@ -227,33 +227,37 @@ class EpuckSupervisor:
             bool: True if the robot is collided, False otherwise.
         """
         return bool(self.touch_sensor.getValue())
-    
-    def step_back(self, dist=0.01):
+
+    def step_back(self, dist=0.07):
         """
         Move the robot back in the opposite direction of current rotation
         (usually after a collision)
         """
         robot_pos = np.array(self.robot.getSelf().getPosition())
         robot_rotation = self.robot.getSelf().getField("rotation").getSFRotation()
-        print("Pos", robot_pos)
-        print("Orientation", robot_rotation)
 
         # compute opposite direction
         angle = (robot_rotation[-1] + np.pi) % (2 * np.pi)
-        print("Angle", angle)
+        if robot_rotation[2] < 0:
+            angle = 2 * np.pi - angle
 
         # compute new position
-        new_pos = robot_pos + dist * np.array([np.cos(angle), np.sin(angle)])
-        print("New pos", new_pos)
+        new_pos = robot_pos
+        new_pos[:2] += dist * np.array([np.cos(angle), np.sin(angle)])
+
+        # clip if the position is outside arena
+        arena_x, arena_y = self.arena_size
+        buffer = 0.08
+        new_pos[0] = np.clip(new_pos[0], -arena_x / 2 + buffer, arena_x / 2 - buffer)
+        new_pos[1] = np.clip(new_pos[1], -arena_y / 2 + buffer, arena_y / 2 - buffer)
 
         # move to new position
-        self._move_node(self.robot.getSelf(), new_pos)
+        self._move_node(self.robot.getSelf(), new_pos.tolist())
 
     def render_occupancy_grid(self):
         """
         Render the occupancy grid.
         """
-
         def _mark_position(grid, x, y, size, value):
             grid[x : x + size, y : y + size] = value
 
