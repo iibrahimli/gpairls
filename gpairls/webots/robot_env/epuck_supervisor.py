@@ -53,7 +53,7 @@ class EpuckSupervisor:
         # self.init_robot_ori = self.robot.getSelf().getOrientation()
         self.goal_pos = self.robot.getFromDef("goal").getPosition()
         self.goal_ori = self.robot.getFromDef("goal").getOrientation()
-        self.init_robot_pos[2] += 0.005
+        # self.init_robot_pos[2] += 0.005
 
         # occupancy grid
         self.arena_size = (
@@ -227,6 +227,27 @@ class EpuckSupervisor:
             bool: True if the robot is collided, False otherwise.
         """
         return bool(self.touch_sensor.getValue())
+    
+    def step_back(self, dist=0.01):
+        """
+        Move the robot back in the opposite direction of current rotation
+        (usually after a collision)
+        """
+        robot_pos = np.array(self.robot.getSelf().getPosition())
+        robot_rotation = self.robot.getSelf().getField("rotation").getSFRotation()
+        print("Pos", robot_pos)
+        print("Orientation", robot_rotation)
+
+        # compute opposite direction
+        angle = (robot_rotation[-1] + np.pi) % (2 * np.pi)
+        print("Angle", angle)
+
+        # compute new position
+        new_pos = robot_pos + dist * np.array([np.cos(angle), np.sin(angle)])
+        print("New pos", new_pos)
+
+        # move to new position
+        self._move_node(self.robot.getSelf(), new_pos)
 
     def render_occupancy_grid(self):
         """

@@ -82,10 +82,10 @@ class RobotEnv(gym.Env):
         if not done and self.step_count == self.max_steps:
             done = True
 
-        # check collision
+        # check collision & move robot back
         if not done and self.controller.is_collided():
             reward = config.COLLISION_REWARD
-            done = True
+            self.controller.step_back()
 
         # check if goal is reached
         if not done:
