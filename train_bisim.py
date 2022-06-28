@@ -14,13 +14,12 @@ import wandb
 import torch
 import numpy as np
 
-import config
-import utils
-from webots import RobotEnv
-from ppr import PPR
-from experts import ExpertPresets
-from log import Logger
-from agent import BaselineAgent, BisimAgent
+from gpairls import config, utils
+from gpairls.webots import RobotEnv
+from gpairls.ppr import PPR
+from gpairls.experts import ExpertPresets
+from gpairls.log import Logger
+from gpairls.agent import BisimAgent
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
