@@ -6,3 +6,5 @@ logs/
 .ipynb_checkpoints/
 wandb/
 *.pem
+id_rsa
+id_rsa.pub
