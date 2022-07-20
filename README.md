@@ -2,6 +2,9 @@
 
 Seminar project for the course [Bio-Inspired Artificial Intelligence](https://www.inf.uni-hamburg.de/en/inst/ab/wtm/teaching/teaching-2021-wise-bioinspired-ai-seminar.html) (WiSe 21/22) at the University of Hamburg.
 
+Advisor: [Dr. Francisco Cruz](http://www.franciscocruz.cl).
+
+
 ## Abstract
 
 Reinforcement learning (RL) is widely used to learn optimal policies in complex environments, but current methods require vast amounts of data and computation. Interactive reinforcement learning (IntRL) methods are researched extensively to leverage expert assistance in reducing this cost. Previous approaches in interactive RL have mainly focused on real-time advice, which is neither subsequently stored nor used for states other than the one it was provided for. Later approaches such as rule-based persistent interactive RL and broad-persistent advising have incorporated methods to retain and reuse knowledge, enabling agents to utilize the general advice in different relevant states. This implementation paper introduces a generalization model for broad-persistent advising which uses bisimulation metrics to evaluate similarity of states and to determine the relevant target state set for given advice. In contrast to direct state-space clustering (e.g. using K-means), bisimulation metrics capture behavioral information of an agent, possibly providing better grouping of similar states. During training of the agent, a state representation space is learned such that the distance between embeddings approximates the bisimulation metric.
@@ -40,9 +43,7 @@ where `RUN_NAME` must be replaced by the (long) name of the training run, it can
 
 ## Acknowledgements
 
-Work was conducted under supervision and advice of [Dr. Francisco Cruz](http://www.franciscocruz.cl).
-
-This codebase is partially based on the following resources:
+This codebase is based on the following resources:
 
 - [Zhang et al. 2020] Deep Bisimulation for Control (licensed under CC-BY-NC 4.0):
   
@@ -51,4 +52,4 @@ This codebase is partially based on the following resources:
   
   [repository](https://github.com/mwizard1010/robot-control) | [paper](https://arxiv.org/pdf/2110.08003.pdf)
 
-Sources and any modifications on original code are provided in the beginning of relevant files.
+Sources and any modifications on original code are provided in the docstrings relevant files.
