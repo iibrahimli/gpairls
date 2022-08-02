@@ -195,18 +195,6 @@ def run_training(agent, env, policy_reuse, expert_config):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        "--agent",
-        type=str,
-        default="baseline",
-        help="which agent to use",
-        choices=["baseline", "nonpersistent", "persistent", "bisim"],
-    )
-    args = parser.parse_args()
-
-    print("Using agent:", args.agent)
-
     utils.set_seed_everywhere(config.SEED)
 
     ENV_NAME = "RobotEnv-v0"
@@ -223,21 +211,17 @@ if __name__ == "__main__":
         device=device,
     )
 
-    expert_config = ExpertPresets.REALISTIC if args.agent != "baseline" else None
+    expert_config = ExpertPresets.REALISTIC
 
-    policy_reuse = (
-        PPR(init_prob=0.8, decay_rate=0.01)
-        if args.agent in ("persistent", "bisim")
-        else None
-    )
+    policy_reuse = PPR(init_prob=0.8, decay_rate=0.01)
 
     dt = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    RUN_NAME = f"{ENV_NAME}_{args.agent}_{dt}"
+    RUN_NAME = f"{ENV_NAME}_bisim_{dt}"
 
     wandb_config={
         "datetime": dt,
         "env": ENV_NAME,
-        "agent": args.agent,
+        "agent": "bisim",
         "training_steps": config.TRAINING_STEPS,
         "eval_freq": config.EVAL_FREQ,
         "batch_size": config.BATCH_SIZE,
@@ -249,7 +233,7 @@ if __name__ == "__main__":
     }
 
     # initialize wandb
-    wandb_run_name = f"RobotEnv-{args.agent}"
+    wandb_run_name = f"RobotEnv-bisim"
     if expert_config is not None:
         wandb_run_name += f"-{expert_config.name}"
     wandb.init(
