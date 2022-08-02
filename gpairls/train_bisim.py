@@ -163,8 +163,6 @@ def run_training(agent, env, policy_reuse, expert_config):
 
             L.log("train/episode", episode, step)
 
-        # ======= TODO: refactor terrible code below =======
-
         # sample action for data collection
         if step < config.INIT_STEPS:
             action = env.action_space.sample()
