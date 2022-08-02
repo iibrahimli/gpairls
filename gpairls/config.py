@@ -15,7 +15,7 @@ MODEL_DIR = LOG_DIR / "model"
 SEED = 42
 
 # number of steps to train each agent
-TRAINING_STEPS = 2000
+TRAINING_STEPS = 20_000
 
 # number of steps to collect data before starting training
 INIT_STEPS = 500
@@ -27,11 +27,11 @@ ENCODER_TYPE = "cnn"
 ENCODER_FEATURE_DIM = 32
 
 # actor and critic hidden dimensions
-HIDDEN_DIM = 16
+HIDDEN_DIM = 128
 
-REPLAY_BUFFER_CAPACITY = 64
+REPLAY_BUFFER_CAPACITY = 5_000
 
-BATCH_SIZE = 16
+BATCH_SIZE = 64
 
 CRITIC_LR = 1e-3
 
