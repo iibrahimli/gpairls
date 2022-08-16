@@ -26,6 +26,13 @@ python3 -m pip install -r requirements.txt
 ```
 
 ### Run training
+
+Run Webots
+
+```bash
+xvfb-run webots --batch --no-rendering --mode=fast --stdout --stderr gpairls/gpairls/webots/worlds/testing.wbt
+```
+
 The configuration parameters are in file `gpairls/config.py`, feel free to view/change them. The training script is `gpairls/train.py`. It can be run as such:
 
 ```bash
