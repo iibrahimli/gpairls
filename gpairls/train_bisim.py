@@ -33,7 +33,7 @@ def get_embedding(agent, obs):
     if obs.ndim == 3:
         obs = np.expand_dims(obs, 0)
     with utils.eval_mode(agent.actor.encoder):
-        emb = agent.actor.encoder(torch.tensor(obs)).detach().cpu().numpy()
+        emb = agent.actor.encoder(torch.tensor(obs).to(device)).detach().cpu().numpy()
     return emb
 
 
