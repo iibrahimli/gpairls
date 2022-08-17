@@ -27,14 +27,18 @@ if __name__ == "__main__":
     checkpoint_dir = "logs/model"
 
     agent.load(checkpoint_dir, 0)
+    print("Loaded model from", checkpoint_dir)
 
     for episode in range(100):
         obs = env.reset()
         done = False
+        step = 0
         episode_reward = 0
         while not done:
             action = agent.sample_action(obs)
             obs, reward, done, info = env.step(action)
-            env.render(show_occupancy_grid=True)
+            print(f"step {step} - action: {action[0]:.4f} - reward: {reward:.4f}")
+            # env.render(show_occupancy_grid=True)
             episode_reward += reward
+            step += 1
         print(f"Episode {episode}   reward: {episode_reward:.3f}")
