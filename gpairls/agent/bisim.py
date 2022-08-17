@@ -308,8 +308,9 @@ class BisimAgent:
         torch.save(self.reward_decoder.state_dict(), f"{model_dir}/reward_decoder.pt")
 
     def load(self, model_dir, step):
-        self.actor.load_state_dict(torch.load(f"{model_dir}/actor.pt"))
-        self.critic.load_state_dict(torch.load(f"{model_dir}/critic.pt"))
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.actor.load_state_dict(torch.load(f"{model_dir}/actor.pt", map_location=device))
+        self.critic.load_state_dict(torch.load(f"{model_dir}/critic.pt", map_location=device))
         self.reward_decoder.load_state_dict(
-            torch.load(f"{model_dir}/reward_decoder.pt")
+            torch.load(f"{model_dir}/reward_decoder.pt", map_location=device)
         )
