@@ -52,6 +52,9 @@ class PPR:
 
     def __repr__(self) -> str:
         return f"PPR(init={self.init_prob}, decay={self.decay_rate}, vals={self.vals})"
+    
+    def __len__(self) -> int:
+        return len(self.vals)
 
     def step(self):
         """
