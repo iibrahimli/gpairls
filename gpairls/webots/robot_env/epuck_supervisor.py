@@ -10,8 +10,7 @@ from pathlib import Path
 import numpy as np
 from skimage.transform import resize
 
-# TODO: ew
-# sys.path.insert(0, "/Applications/Webots.app/lib/controller/python39") # local
+sys.path.insert(0, "/Applications/Webots.app/lib/controller/python39") # local
 sys.path.insert(0, "/usr/local/webots/lib/controller/python38")  # wtmstuc
 from controller import Supervisor
 
