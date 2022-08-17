@@ -191,7 +191,7 @@ def run_training(agent, env, policy_reuse, expert_config):
         epsilon *= 0.99
         if policy_reuse is not None:
             policy_reuse.step()
-            wandb.log({"ppr_size": len(policy_reuse.vals)}, step=step)
+            wandb.log({"ppr_size": len(policy_reuse)}, step=step)
 
 
 if __name__ == "__main__":
