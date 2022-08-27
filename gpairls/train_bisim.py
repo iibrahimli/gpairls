@@ -7,7 +7,7 @@ environment, custom stats logging, and no decoders.
 """
 
 import time
-import argparse
+from pathlib import Path
 from datetime import datetime
 
 import wandb
@@ -46,8 +46,6 @@ def get_action(env, agent, policy_reuse, obs, expert_config, epsilon):
         if policy_reuse is not None:
             policy_reuse.add(emb, action)
         return action
-    
-    emb = get_embedding(agent, obs)
 
     # try to get action from PPR
     if policy_reuse is not None:
@@ -55,7 +53,7 @@ def get_action(env, agent, policy_reuse, obs, expert_config, epsilon):
         # if can use ppr action, use it
         if ppr_action is not None and (np.random.rand() <= use_prob):
             return ppr_action
-    
+
     # exploration
     if np.random.random() <= epsilon:
         return env.action_space.sample()
@@ -105,6 +103,8 @@ def evaluate(env, agent, L, step, n_episodes=5):
 
 def run_training(agent, env, policy_reuse, expert_config):
 
+    agent.train()
+
     replay_buffer = utils.ReplayBuffer(
         obs_shape=env.observation_space.shape,
         action_shape=env.action_space.shape,
@@ -119,23 +119,6 @@ def run_training(agent, env, policy_reuse, expert_config):
     episode, episode_reward, done = 0, 0, True
     start_time = time.time()
     for step in range(config.TRAINING_STEPS):
-
-        # evaluate agent periodically
-        if step % config.EVAL_FREQ == 0:
-            L.log("eval/episode", episode, step)
-            mean_reward, mean_length = evaluate(env, agent, L, step)
-            agent.save(config.MODEL_DIR, step)
-            # replay_buffer.save(buffer_dir)
-
-            wandb.log(
-                {
-                    "eval": {
-                        "episode_reward": mean_reward,
-                        "episode_length": mean_length,
-                    }
-                },
-                step=step,
-            )
 
         if done:
             if step > 0:
@@ -164,6 +147,24 @@ def run_training(agent, env, policy_reuse, expert_config):
 
             L.log("train/episode", episode, step)
 
+
+        # evaluate agent periodically
+        if step % config.EVAL_FREQ == 0:
+            L.log("eval/episode", episode, step)
+            mean_reward, mean_length = evaluate(env, agent, L, step)
+            agent.save(config.MODEL_DIR, step)
+            # replay_buffer.save(buffer_dir)
+
+            wandb.log(
+                {
+                    "eval": {
+                        "episode_reward": mean_reward,
+                        "episode_length": mean_length,
+                    }
+                },
+                step=step,
+            )
+
         # sample action for data collection
         if step < config.INIT_STEPS:
             action = env.action_space.sample()
@@ -180,8 +181,7 @@ def run_training(agent, env, policy_reuse, expert_config):
         next_obs, reward, done, _ = env.step(action)
 
         # allow infinite bootstrap
-        done_float = 0.0 if episode_step + 1 == env._max_episode_steps else float(done)
-        # done_float = float(done)
+        done_float = 0.0 if episode_step + 1 >= env._max_episode_steps else float(done)
         episode_reward += reward
 
         replay_buffer.add(obs, action, curr_reward, reward, next_obs, done_float)
@@ -212,6 +212,14 @@ if __name__ == "__main__":
         device=device,
     )
 
+    # load model to continue training, if model file exists
+    model_dir_path = Path("logs/model_cont/")
+    if model_dir_path.exists() and any(model_dir_path.iterdir()):
+        agent.load(model_dir_path, None)
+        print("Loaded model to continue training")
+    else:
+        print("Training from scratch")
+
     expert_config = ExpertPresets.REALISTIC
 
     policy_reuse = PPR(init_prob=0.8, decay_rate=0.01)
@@ -219,7 +227,7 @@ if __name__ == "__main__":
     dt = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     RUN_NAME = f"{ENV_NAME}_bisim_{dt}"
 
-    wandb_config={
+    wandb_config = {
         "datetime": dt,
         "env": ENV_NAME,
         "agent": "bisim",
@@ -229,6 +237,7 @@ if __name__ == "__main__":
         "replay_buffer_capacity": config.REPLAY_BUFFER_CAPACITY,
         "init_steps": config.INIT_STEPS,
         "hidden_dim": config.HIDDEN_DIM,
+        "encoder_dim": config.ENCODER_FEATURE_DIM,
         "actor_lr": config.ACTOR_LR,
         "critic_lr": config.CRITIC_LR,
     }
@@ -243,7 +252,7 @@ if __name__ == "__main__":
         name=wandb_run_name,
         config=wandb_config,
     )
-    wandb.watch(agent.actor)
+    wandb.watch((agent.actor, agent.critic, agent.transition_model))
 
     # stop when ^C
     try:
@@ -253,15 +262,3 @@ if __name__ == "__main__":
     finally:
         env.close()
         print("Done\n")
-
-    print("Rendering trained agent in environment")
-    obs = env.reset()
-    done = False
-    step = 0
-    with utils.eval_mode(agent):
-        while not done:
-            env.render(show_occupancy_grid=True)
-            action = agent.sample_action(obs)
-            obs, reward, done, _ = env.step(action)
-            print(f"step {step}: action = {action[0]:.3f}, reward = {reward:.3f}")
-            step += 1

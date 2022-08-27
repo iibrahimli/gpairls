@@ -269,6 +269,7 @@ class BisimAgent:
         pred_next_reward = self.reward_decoder(pred_next_latent)
         reward_loss = F.mse_loss(pred_next_reward, reward)
         total_loss = loss + reward_loss
+        wandb.log({"train": {"transition_reward_loss": total_loss.detach()}}, step=step)
         return total_loss
 
     def update(self, replay_buffer, L, step):
