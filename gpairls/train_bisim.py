@@ -116,8 +116,9 @@ def run_training(agent, env, policy_reuse, expert_config):
     L = Logger(config.LOG_DIR, use_tb=False)
 
     epsilon = 0.2
-    episode, episode_reward, done = 0, 0, True
+    episode, episode_reward, done = 0, 0, False
     start_time = time.time()
+
     for step in range(config.TRAINING_STEPS):
 
         if done:
@@ -146,7 +147,6 @@ def run_training(agent, env, policy_reuse, expert_config):
             reward = 0
 
             L.log("train/episode", episode, step)
-
 
         # evaluate agent periodically
         if step % config.EVAL_FREQ == 0:
