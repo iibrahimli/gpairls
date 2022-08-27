@@ -116,7 +116,10 @@ def run_training(agent, env, policy_reuse, expert_config):
     L = Logger(config.LOG_DIR, use_tb=False)
 
     epsilon = 0.2
-    episode, episode_reward, done = 0, 0, False
+    episode = 0
+    reward = 0
+    episode_reward = 0
+    done = False
     start_time = time.time()
 
     for step in range(config.TRAINING_STEPS):
