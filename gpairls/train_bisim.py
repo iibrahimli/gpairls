@@ -120,7 +120,7 @@ def run_training(agent, env, policy_reuse, expert_config):
     reward = 0
     episode_step = 0
     episode_reward = 0
-    done = False
+    done = True
     start_time = time.time()
 
     for step in range(config.TRAINING_STEPS):
