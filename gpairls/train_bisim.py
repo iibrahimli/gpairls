@@ -118,6 +118,7 @@ def run_training(agent, env, policy_reuse, expert_config):
     epsilon = 0.2
     episode = 0
     reward = 0
+    episode_step = 0
     episode_reward = 0
     done = False
     start_time = time.time()
