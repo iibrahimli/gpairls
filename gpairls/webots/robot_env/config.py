@@ -11,13 +11,13 @@ CONTROL_TIMESTEP = 100
 MAX_STEPS = round(10 * 60 * (1000 / CONTROL_TIMESTEP))
 
 # reward for not reaching the goal
-STEP_REWARD = -1.
+STEP_REWARD = -0.1
 
 # reward for reaching the goal
-GOAL_REWARD = 1000.
+GOAL_REWARD = 100.
 
 # reward for collision
-COLLISION_REWARD = -10.
+COLLISION_REWARD = -1.
 
 # distance (meters) under which the goal is considered reached
 GOAL_DISTANCE_THRESHOLD = 0.1
