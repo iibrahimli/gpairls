@@ -174,7 +174,7 @@ class BisimAgent:
             current_Q2, target_Q
         )
         L.log("train_critic/loss", critic_loss, step)
-        wandb.log({"train": {"critic_loss": critic_loss.detach().item()}}, step=step)
+        wandb.log({"train": {"critic_loss": critic_loss.detach()}}, step=step)
 
         # Optimize the critic
         self.critic_optimizer.zero_grad()
@@ -309,8 +309,12 @@ class BisimAgent:
 
     def load(self, model_dir, step):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.actor.load_state_dict(torch.load(f"{model_dir}/actor.pt", map_location=device))
-        self.critic.load_state_dict(torch.load(f"{model_dir}/critic.pt", map_location=device))
+        self.actor.load_state_dict(
+            torch.load(f"{model_dir}/actor.pt", map_location=device)
+        )
+        self.critic.load_state_dict(
+            torch.load(f"{model_dir}/critic.pt", map_location=device)
+        )
         self.reward_decoder.load_state_dict(
             torch.load(f"{model_dir}/reward_decoder.pt", map_location=device)
         )
