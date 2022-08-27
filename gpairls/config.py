@@ -15,10 +15,10 @@ MODEL_DIR = LOG_DIR / "model"
 SEED = 42
 
 # number of steps to train each agent
-TRAINING_STEPS = 20_000
+TRAINING_STEPS = 20_000_000
 
 # number of steps to collect data before starting training
-INIT_STEPS = 500
+INIT_STEPS = 1000
 
 # encoder type
 ENCODER_TYPE = "cnn"
@@ -31,7 +31,7 @@ HIDDEN_DIM = 128
 
 REPLAY_BUFFER_CAPACITY = 5_000
 
-BATCH_SIZE = 64
+BATCH_SIZE = 256
 
 CRITIC_LR = 1e-3
 
