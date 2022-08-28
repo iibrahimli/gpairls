@@ -22,16 +22,12 @@ class ExpertConfig:
 
 
 class ExpertPresets:
-    """
-    Source: https://arxiv.org/pdf/2102.02441.pdf
-    """
-
     OPTIMISTIC = ExpertConfig(
         name="optimistic", availability=1.0, accuracy=1.0
     )
     REALISTIC = ExpertConfig(
-        name="realistic", availability=0.94870, accuracy=0.47316
+        name="realistic", availability=0.75, accuracy=0.75
     )
     PESSIMISTIC = ExpertConfig(
-        name="pessimistic", availability=0.47435, accuracy=0.23658
+        name="pessimistic", availability=0.2, accuracy=0.1
     )

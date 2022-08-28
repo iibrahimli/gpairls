@@ -200,7 +200,6 @@ class EpuckSupervisor:
         # compute direction towards the next grid cell
         next_x, next_y = self._grid_to_world_coords(*shortest_path[MIN_NEXT_STEPS - 1])
         next_angle = math.atan2(next_y - robot_pos[1], next_x - robot_pos[0])
-        # next_angle -= math.pi / 2  # rotate to x-axis
 
         # robot angle and next angle are in range [-pi, pi]
         # therefore, the angle difference is in range [-2pi, 2pi]
