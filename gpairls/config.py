@@ -18,7 +18,7 @@ SEED = 42
 TRAINING_STEPS = 20_000_000
 
 # number of steps to collect data before starting training
-INIT_STEPS = 10
+INIT_STEPS = 1000
 
 # encoder type
 ENCODER_TYPE = "cnn"
