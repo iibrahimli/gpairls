@@ -18,7 +18,7 @@ SEED = 42
 TRAINING_STEPS = 20_000_000
 
 # number of steps to collect data before starting training
-INIT_STEPS = 1
+INIT_STEPS = 1000
 
 # encoder type
 ENCODER_TYPE = "cnn"
@@ -46,4 +46,4 @@ LOG_FREQ = 250
 EVAL_FREQ = 500
 
 # frequency of W&B logging
-WANDB_LOG_FREQ = 20
+WANDB_LOG_FREQ = 10
