@@ -177,14 +177,13 @@ def run_training(agent, env, policy_reuse, expert_config):
 
         # run training update
         if step >= config.INIT_STEPS:
-            # TODO change num updates
+            # TODO num updates
             num_updates = 1 if step == config.INIT_STEPS else 1
             for _ in range(num_updates):
                 agent.update(replay_buffer, L, step)
 
         curr_reward = reward
         next_obs, reward, done, _ = env.step(action)
-        print("==== ENVIRONMENT DONE ==== ")
 
         # allow infinite bootstrap
         done_float = 0.0 if episode_step + 1 >= env._max_episode_steps else float(done)
@@ -228,7 +227,7 @@ if __name__ == "__main__":
 
     expert_config = ExpertPresets.REALISTIC
 
-    policy_reuse = PPR(init_prob=0.8, decay_rate=0.01)
+    policy_reuse = PPR(init_prob=0.8, decay_rate=0.001)
 
     dt = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     RUN_NAME = f"{ENV_NAME}_bisim_{dt}"
