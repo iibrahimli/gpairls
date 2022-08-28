@@ -254,7 +254,6 @@ class BisimAgent:
         return loss
 
     def update_transition_reward_model(self, obs, action, next_obs, reward, L, step):
-
         h = self.critic.encoder(obs)
         pred_next_latent_mu, pred_next_latent_sigma = self.transition_model(
             torch.cat([h, action], dim=1)
