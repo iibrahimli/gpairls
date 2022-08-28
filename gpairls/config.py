@@ -40,10 +40,10 @@ ACTOR_LR = 1e-3
 ENCODER_LR = 1e-3
 
 # frequency of logging (steps)
-LOG_FREQ = 250
+LOG_FREQ = 5000
 
 # frequency of evaluation (steps)
-EVAL_FREQ = 500
+EVAL_FREQ = 5000
 
 # frequency of W&B logging
-WANDB_LOG_FREQ = 4
+WANDB_LOG_FREQ = 10

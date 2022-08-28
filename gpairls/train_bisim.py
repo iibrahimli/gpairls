@@ -91,6 +91,9 @@ def evaluate(env, agent, L, step, n_episodes=5):
     mean_reward = np.mean(episode_rewards)
     mean_length = np.mean(episode_lengths)
 
+    std_reward = np.std(episode_rewards)
+    std_length = np.std(episode_lengths)
+
     L.log("eval/episode_reward", mean_reward, step)
     L.log("eval/episode_length", mean_length, step)
 
@@ -98,7 +101,7 @@ def evaluate(env, agent, L, step, n_episodes=5):
         f"[EVAL] Step {step}: mean reward: {mean_reward:.5f}, mean length: {mean_length}"
     )
 
-    return mean_reward, mean_length
+    return mean_reward, mean_length, std_reward, std_length
 
 
 def run_training(agent, env, policy_reuse, expert_config):
@@ -150,12 +153,15 @@ def run_training(agent, env, policy_reuse, expert_config):
             episode += 1
             reward = 0
 
+            wandb.log({"train": {"episode": episode}})
             L.log("train/episode", episode, step)
 
         # evaluate agent periodically
         if step % config.EVAL_FREQ == 0:
             L.log("eval/episode", episode, step)
-            mean_reward, mean_length = evaluate(env, agent, L, step)
+            mean_reward, mean_length, std_reward, std_length = evaluate(
+                env, agent, L, step
+            )
             agent.save(config.MODEL_DIR, step)
             # replay_buffer.save(buffer_dir)
 
@@ -164,6 +170,8 @@ def run_training(agent, env, policy_reuse, expert_config):
                     "eval": {
                         "episode_reward": mean_reward,
                         "episode_length": mean_length,
+                        "episode_reward_std": std_reward,
+                        "episode_length_std": std_length,
                     }
                 },
                 step=step,
