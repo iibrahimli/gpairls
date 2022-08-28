@@ -216,6 +216,7 @@ class EpuckSupervisor:
         if np.abs(angle_diff) < 0.1:
             return -angle_diff
         else:
+            # angle too large - turn as much as you can
             return np.sign(-angle_diff)
 
     def is_collided(self):
