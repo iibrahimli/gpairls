@@ -162,6 +162,8 @@ class BisimAgent:
             return pi.cpu().data.numpy().flatten()
 
     def update_critic(self, obs, action, reward, next_obs, not_done, L, step):
+        print("INSIDE UPDATE CRITIC")
+
         with torch.no_grad():
             _, policy_action, log_pi, _ = self.actor(next_obs)
             target_Q1, target_Q2 = self.critic_target(next_obs, policy_action)
@@ -174,6 +176,7 @@ class BisimAgent:
             current_Q2, target_Q
         )
         L.log("train_critic/loss", critic_loss, step)
+        print("INSIDE UPDATE CRITIC, RIGHT BEFORE WANDB LOG")
         wandb.log({"train": {"critic_loss": critic_loss.detach()}}, step=step)
 
         # Optimize the critic
@@ -251,6 +254,8 @@ class BisimAgent:
         return loss
 
     def update_transition_reward_model(self, obs, action, next_obs, reward, L, step):
+        print("INSIDE UPDATE TRANSITION REWARD MODEL")
+
         h = self.critic.encoder(obs)
         pred_next_latent_mu, pred_next_latent_sigma = self.transition_model(
             torch.cat([h, action], dim=1)
@@ -269,10 +274,12 @@ class BisimAgent:
         pred_next_reward = self.reward_decoder(pred_next_latent)
         reward_loss = F.mse_loss(pred_next_reward, reward)
         total_loss = loss + reward_loss
+        print("INSIDE UPDATE TRANSITION MODEL, RIGHT BEFORE WANDB LOG")
         wandb.log({"train": {"transition_reward_loss": total_loss.detach()}}, step=step)
         return total_loss
 
     def update(self, replay_buffer, L, step):
+        print("INSIDE UPDATE")
         obs, action, _, reward, next_obs, not_done = replay_buffer.sample()
 
         L.log("train/batch_reward", reward.mean(), step)
@@ -290,9 +297,11 @@ class BisimAgent:
         self.decoder_optimizer.step()
 
         if step % self.actor_update_freq == 0:
+            print("INSIDE UPDATE, UPDATING ACTOR")
             self.update_actor_and_alpha(obs, L, step)
 
         if step % self.critic_target_update_freq == 0:
+            print("INSIDE UPDATE, UPDATING CRITIC TARGET")
             utils.soft_update_params(
                 self.critic.Q1, self.critic_target.Q1, self.critic_tau
             )

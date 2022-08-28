@@ -177,7 +177,8 @@ def run_training(agent, env, policy_reuse, expert_config):
 
         # run training update
         if step >= config.INIT_STEPS:
-            num_updates = 10 if step == config.INIT_STEPS else 1
+            # TODO change num updates
+            num_updates = 1 if step == config.INIT_STEPS else 1
             for _ in range(num_updates):
                 agent.update(replay_buffer, L, step)
 
