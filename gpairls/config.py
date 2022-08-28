@@ -44,3 +44,6 @@ LOG_FREQ = 250
 
 # frequency of evaluation (steps)
 EVAL_FREQ = 500
+
+# frequency of W&B logging
+WANDB_LOG_FREQ = 20

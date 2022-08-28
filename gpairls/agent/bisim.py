@@ -174,7 +174,8 @@ class BisimAgent:
             current_Q2, target_Q
         )
         L.log("train_critic/loss", critic_loss, step)
-        wandb.log({"train": {"critic_loss": critic_loss.detach()}}, step=step)
+        if step % config.WANDB_LOG_FREQ == 0:
+            wandb.log({"train": {"critic_loss": critic_loss.detach()}}, step=step)
 
         # Optimize the critic
         self.critic_optimizer.zero_grad()
@@ -197,7 +198,8 @@ class BisimAgent:
             dim=-1
         )
         L.log("train_actor/entropy", entropy.mean(), step)
-        wandb.log({"train": {"actor_loss": actor_loss}}, step=step)
+        if step % config.WANDB_LOG_FREQ == 0:
+            wandb.log({"train": {"actor_loss": actor_loss}}, step=step)
 
         # optimize the actor
         self.actor_optimizer.zero_grad()
@@ -246,7 +248,8 @@ class BisimAgent:
         bisimilarity = r_dist + self.discount * transition_dist
         loss = (z_dist - bisimilarity).pow(2).mean()
         L.log("train_ae/encoder_loss", loss, step)
-        wandb.log({"train": {"encoder_loss": loss}}, step=step)
+        if step % config.WANDB_LOG_FREQ == 0:
+            wandb.log({"train": {"encoder_loss": loss}}, step=step)
 
         return loss
 
@@ -270,7 +273,10 @@ class BisimAgent:
         pred_next_reward = self.reward_decoder(pred_next_latent)
         reward_loss = F.mse_loss(pred_next_reward, reward)
         total_loss = loss + reward_loss
-        wandb.log({"train": {"transition_reward_loss": total_loss.detach()}}, step=step)
+        if step % config.WANDB_LOG_FREQ == 0:
+            wandb.log(
+                {"train": {"transition_reward_loss": total_loss.detach()}}, step=step
+            )
         return total_loss
 
     def update(self, replay_buffer, L, step):
