@@ -128,6 +128,29 @@ def run_training(agent, env, policy_reuse, expert_config):
 
     for step in range(config.TRAINING_STEPS):
 
+        # evaluate agent periodically
+        if step % config.EVAL_FREQ == 0:
+            L.log("eval/episode", episode, step)
+            mean_reward, mean_length, std_reward, std_length = evaluate(
+                env, agent, L, step
+            )
+            agent.save(config.MODEL_DIR, step)
+            # replay_buffer.save(buffer_dir)
+
+            done = True
+
+            wandb.log(
+                {
+                    "eval": {
+                        "episode_reward": mean_reward,
+                        "episode_length": mean_length,
+                        "episode_reward_std": std_reward,
+                        "episode_length_std": std_length,
+                    }
+                },
+                step=step,
+            )
+
         if done:
             if step > 0:
                 L.log("train/duration", time.time() - start_time, step)
@@ -155,27 +178,6 @@ def run_training(agent, env, policy_reuse, expert_config):
 
             wandb.log({"train": {"episode": episode}})
             L.log("train/episode", episode, step)
-
-        # evaluate agent periodically
-        if step % config.EVAL_FREQ == 0:
-            L.log("eval/episode", episode, step)
-            mean_reward, mean_length, std_reward, std_length = evaluate(
-                env, agent, L, step
-            )
-            agent.save(config.MODEL_DIR, step)
-            # replay_buffer.save(buffer_dir)
-
-            wandb.log(
-                {
-                    "eval": {
-                        "episode_reward": mean_reward,
-                        "episode_length": mean_length,
-                        "episode_reward_std": std_reward,
-                        "episode_length_std": std_length,
-                    }
-                },
-                step=step,
-            )
 
         # sample action for data collection
         if step < config.INIT_STEPS:
