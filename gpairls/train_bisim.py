@@ -133,15 +133,15 @@ def run_training(agent, env, policy_reuse, expert_config):
 
             L.log("train/episode_reward", episode_reward, step)
 
-            wandb.log(
-                {
-                    "train": {
-                        "episode_reward": episode_reward,
-                        "epsilon": epsilon,
-                    }
-                },
-                step=step,
-            )
+            # wandb.log(
+            #     {
+            #         "train": {
+            #             "episode_reward": episode_reward,
+            #             "epsilon": epsilon,
+            #         }
+            #     },
+            #     step=step,
+            # )
 
             obs = env.reset()
             done = False
@@ -184,6 +184,7 @@ def run_training(agent, env, policy_reuse, expert_config):
 
         curr_reward = reward
         next_obs, reward, done, _ = env.step(action)
+        print("==== ENVIRONMENT DONE ==== ")
 
         # allow infinite bootstrap
         done_float = 0.0 if episode_step + 1 >= env._max_episode_steps else float(done)
