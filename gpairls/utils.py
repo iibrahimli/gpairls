@@ -1,12 +1,12 @@
 """
 Utility functions.
 
-Taken from DBC code (https://github.com/facebookresearch/deep_bisim4control)
-with no modifications.
+Based on DBC code (https://github.com/facebookresearch/deep_bisim4control)
 """
 
 import os
 import random
+from typing import Dict
 
 import torch
 import numpy as np
@@ -131,3 +131,76 @@ class ReplayBuffer(object):
             self.curr_rewards[start:end] = payload[4]
             self.not_dones[start:end] = payload[5]
             self.idx = end
+
+
+def get_embedding(agent, obs, device):
+    """
+    Get embedding of observation.
+    """
+    if obs.ndim == 3:
+        obs = np.expand_dims(obs, 0)
+    with eval_mode(agent.actor.encoder):
+        emb = agent.actor.encoder(torch.tensor(obs).to(device)).detach().cpu().numpy()
+    return emb
+
+
+def get_trajectory(agent, env):
+    """Get trajectory from agent"""
+    obss = []
+    embs = []
+    actions = []
+    rewards = []
+
+    obs = env.reset()
+    done = False
+    while not done:
+        action = agent.sample_action(obs)
+        next_obs, reward, done, _ = env.step(action)
+
+        # append
+        obss.append(obs)
+        embs.append(get_embedding(agent, obs))
+        actions.append(action)
+        rewards.append(reward)
+
+        obs = next_obs
+    
+    traj = {
+        "obs": np.array(obss),
+        "embs": np.array(embs),
+        "actions": np.array(actions),
+        "rewards": np.array(rewards),
+    }
+
+    return traj
+
+
+def save_trajectory(
+    path: str,
+    obs: np.ndarray,
+    emb: np.ndarray,
+    actions: np.ndarray,
+    rewards: np.ndarray,
+):
+    """
+    Save agent trajectory.
+
+    Args:
+        path: Path to the file
+        obs: Array of observations, shape [N, C, H, W] where N is number of steps
+        emb: Array of embeddings, shape [N, D], where D is emb dimension
+        actions: Array of actions, shape [N, 1]
+        rewards: Array of rewards, shape [N, 1]
+    """
+    np.savez_compressed(
+        path,
+        obs=obs,
+        emb=emb,
+        actions=actions,
+        rewards=rewards,
+    )
+
+
+def load_trajectory(path: str) -> Dict[str, np.ndarray]:
+    """Load trajectory saved by save_trajectory"""
+    return np.load(path)

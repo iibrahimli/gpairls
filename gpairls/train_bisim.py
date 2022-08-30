@@ -16,8 +16,9 @@ import numpy as np
 
 import config, utils
 from webots import RobotEnv
+from webots import config as env_config
 from ppr import PPR
-from experts import ExpertPresets
+from experts import ExpertConfig
 from log import Logger
 from agent import BisimAgent
 
@@ -26,21 +27,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Device: {device}")
 
 
-def get_embedding(agent, obs):
-    """
-    Get embedding of observation.
-    """
-    if obs.ndim == 3:
-        obs = np.expand_dims(obs, 0)
-    with utils.eval_mode(agent.actor.encoder):
-        emb = agent.actor.encoder(torch.tensor(obs).to(device)).detach().cpu().numpy()
-    return emb
-
-
 def get_action(env, agent, policy_reuse, obs, expert_config, epsilon):
     # try to get expert advice
     expert_action = env.get_expert_action(expert_config)
-    emb = get_embedding(agent, obs)
+    emb = utils.get_embedding(agent, obs, device)
     if expert_action is not None:
         action = expert_action
         if policy_reuse is not None:
@@ -87,6 +77,10 @@ def evaluate(env, agent, L, step, n_episodes=5):
                 episode_step += 1
             episode_rewards.append(episode_reward)
             episode_lengths.append(episode_step)
+
+        # one more episode to save trajectory
+        traj = utils.get_trajectory(agent, env)
+        np.savez_compressed(config.TRAJECTORY_DIR / f"{step}.npz", **traj)
 
     mean_reward = np.mean(episode_rewards)
     mean_length = np.mean(episode_lengths)
@@ -235,7 +229,7 @@ if __name__ == "__main__":
     else:
         print("Training from scratch")
 
-    expert_config = ExpertPresets.REALISTIC
+    expert_config = ExpertConfig(availability=1.0, accuracy=1.0)
 
     policy_reuse = PPR(init_prob=0.8, decay_rate=0.001)
 
@@ -245,7 +239,7 @@ if __name__ == "__main__":
     wandb_config = {
         "datetime": dt,
         "env": ENV_NAME,
-        "agent": "bisim",
+        "control_timestep": f"{env_config.CONTROL_TIMESTEP}ms",
         "training_steps": config.TRAINING_STEPS,
         "eval_freq": config.EVAL_FREQ,
         "batch_size": config.BATCH_SIZE,
@@ -255,12 +249,15 @@ if __name__ == "__main__":
         "encoder_dim": config.ENCODER_FEATURE_DIM,
         "actor_lr": config.ACTOR_LR,
         "critic_lr": config.CRITIC_LR,
+        "expert": {
+            "availability": expert_config.availability,
+            "accuracy": expert_config.accuracy,
+        },
     }
 
     # initialize wandb
-    wandb_run_name = f"RobotEnv-bisim"
-    if expert_config is not None:
-        wandb_run_name += f"-{expert_config.name}"
+    ppr_used = "ppr" if policy_reuse else "no-ppr"
+    wandb_run_name = f"{expert_config.name}_{ppr_used}"
     wandb.init(
         project="gpairls",
         entity="iibrahimli",

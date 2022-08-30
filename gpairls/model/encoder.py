@@ -76,7 +76,7 @@ class CNNEncoder(nn.Module):
     CNN encoder for image states
     """
 
-    def __init__(self, obs_shape, feature_dim, num_layers=2, num_filters=32):
+    def __init__(self, obs_shape, feature_dim, num_layers=3, num_filters=32):
         """
         Args:
             obs_shape (tuple): Shape of the observation [C, H, W]
@@ -92,7 +92,7 @@ class CNNEncoder(nn.Module):
         for i in range(num_layers - 1):
             self.convs.append(nn.Conv2d(num_filters, num_filters, 3, stride=1))
 
-        out_dim = {2: 61}[num_layers]
+        out_dim = {2: 61, 3: 59}[num_layers]
         self.fc = nn.Linear(num_filters * out_dim * out_dim, self.feature_dim)
         self.ln = nn.LayerNorm(self.feature_dim)
 

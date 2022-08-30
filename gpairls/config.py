@@ -11,6 +11,9 @@ LOG_DIR = Path(__file__).parent.parent.resolve() / "logs"
 # directory with model weights
 MODEL_DIR = LOG_DIR / "model"
 
+# directory for eval trajectories
+TRAJECTORY_DIR = LOG_DIR / "trajectories"
+
 # random seed for reproducibility
 SEED = 42
 
@@ -27,23 +30,23 @@ ENCODER_TYPE = "cnn"
 ENCODER_FEATURE_DIM = 32
 
 # actor and critic hidden dimensions
-HIDDEN_DIM = 128
+HIDDEN_DIM = 64
 
-REPLAY_BUFFER_CAPACITY = 5_000
+REPLAY_BUFFER_CAPACITY = 10_000
 
 BATCH_SIZE = 256
 
-CRITIC_LR = 1e-3
+CRITIC_LR = 1e-4
 
-ACTOR_LR = 1e-3
+ACTOR_LR = 1e-4
 
-ENCODER_LR = 1e-3
+ENCODER_LR = 1e-4
 
 # frequency of logging (steps)
-LOG_FREQ = 5000
+LOG_FREQ = 10000
 
 # frequency of evaluation (steps)
-EVAL_FREQ = 5000
+EVAL_FREQ = 10000
 
 # frequency of W&B logging
 WANDB_LOG_FREQ = 10
