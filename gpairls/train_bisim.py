@@ -236,10 +236,19 @@ if __name__ == "__main__":
     dt = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     RUN_NAME = f"{ENV_NAME}_bisim_{dt}"
 
+    print(f"Control timestep: {env_config.CONTROL_TIMESTEP} ms")
+    print(f"Max steps per episode: {env_config.MAX_STEPS}")
+
     wandb_config = {
         "datetime": dt,
-        "env": ENV_NAME,
-        "control_timestep": f"{env_config.CONTROL_TIMESTEP}ms",
+        "env": {
+            "name": ENV_NAME,
+            "step_reward": env_config.STEP_REWARD,
+            "collision_reward": env_config.COLLISION_REWARD,
+            "goal_reward": env_config.GOAL_REWARD,
+            "control_timestep": f"{env_config.CONTROL_TIMESTEP}ms",
+            "max_steps": env_config.MAX_STEPS,
+        },
         "training_steps": config.TRAINING_STEPS,
         "eval_freq": config.EVAL_FREQ,
         "batch_size": config.BATCH_SIZE,
