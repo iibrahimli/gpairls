@@ -178,6 +178,7 @@ class BisimAgent:
         # Optimize the critic
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
+        nn.utils.clip_grad_value_(self.critic.parameters(), clip_value=1.0)
         self.critic_optimizer.step()
 
         self.critic.log(L, step, config.LOG_FREQ)
@@ -202,6 +203,7 @@ class BisimAgent:
         # optimize the actor
         self.actor_optimizer.zero_grad()
         actor_loss.backward()
+        nn.utils.clip_grad_value_(self.actor.parameters(), clip_value=1.0)
         self.actor_optimizer.step()
 
         self.actor.log(L, step, config.LOG_FREQ)
@@ -288,12 +290,20 @@ class BisimAgent:
         self.encoder_optimizer.zero_grad()
         self.decoder_optimizer.zero_grad()
         total_loss.backward()
+        # params for encoder_optimizer and decoder_optimizer
+        nn.utils.clip_grad_value_(self.critic.encoder.parameters(), clip_value=1.0)
+        nn.utils.clip_grad_value_(
+            list(self.reward_decoder.parameters())
+            + list(self.transition_model.parameters()),
+            clip_value=1.0,
+        )
         self.encoder_optimizer.step()
         self.decoder_optimizer.step()
 
         if step % self.actor_update_freq == 0:
             actor_loss = self.update_actor_and_alpha(obs, L, step)
 
+            # TODO wandb log freq needs to be divisible by actor log freq (2)
             if step % config.WANDB_LOG_FREQ == 0:
                 wandb.log(
                     {
