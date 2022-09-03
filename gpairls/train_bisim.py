@@ -252,6 +252,12 @@ if __name__ == "__main__":
             "control_timestep": f"{env_config.CONTROL_TIMESTEP} ms",
             "max_steps": env_config.MAX_STEPS,
         },
+        "ppr": {
+            "init_prob": policy_reuse.init_prob,
+            "decay_rate": policy_reuse.decay_rate,
+        }
+        if policy_reuse is not None
+        else None,
         "training_steps": config.TRAINING_STEPS,
         "eval_freq": config.EVAL_FREQ,
         "batch_size": config.BATCH_SIZE,
@@ -268,7 +274,6 @@ if __name__ == "__main__":
     }
 
     # initialize wandb
-    print(policy_reuse, bool(policy_reuse))
     ppr_used = "ppr" if policy_reuse is not None else "no-ppr"
     wandb_run_name = f"{expert_config.name}_{ppr_used}"
     wandb.init(
