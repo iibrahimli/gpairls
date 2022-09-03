@@ -95,7 +95,7 @@ def evaluate(env, agent, L, step, n_episodes=5):
         # get critic Q value (avg of Q1 & Q2) for first_obs and action = go straight
         first_obs = utils.ensure_obs_dims(first_obs)
         critic_q1, critic_q2 = agent.critic(
-            torch.tensor(first_obs).to(device), [0], detach_encoder=True
+            torch.tensor(first_obs).to(device), torch.tensor([0]).to(device), detach_encoder=True
         )
         critic_q = (critic_q1 + critic_q2) / 2
 
