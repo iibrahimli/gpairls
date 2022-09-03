@@ -262,15 +262,18 @@ if __name__ == "__main__":
         }
         if policy_reuse is not None
         else None,
+        "encoder": {
+            "feature_dim": config.ENCODER_FEATURE_DIM,
+            "num_layers": config.ENCODER_NUM_LAYERS,
+            "num_filters": config.ENCODER_NUM_FILTERS,
+            "lr": config.ENCODER_LR,
+        },
         "training_steps": config.TRAINING_STEPS,
         "eval_freq": config.EVAL_FREQ,
         "batch_size": config.BATCH_SIZE,
         "replay_buffer_capacity": config.REPLAY_BUFFER_CAPACITY,
         "init_steps": config.INIT_STEPS,
         "hidden_dim": config.HIDDEN_DIM,
-        "encoder_dim": config.ENCODER_FEATURE_DIM,
-        "encoder_num_layers": config.ENCODER_NUM_LAYERS,
-        "encoder_num_filters": config.ENCODER_NUM_FILTERS,
         "actor_lr": config.ACTOR_LR,
         "critic_lr": config.CRITIC_LR,
         "expert": {
