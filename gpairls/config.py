@@ -43,11 +43,11 @@ REPLAY_BUFFER_CAPACITY = 10_000
 
 BATCH_SIZE = 256
 
-CRITIC_LR = 1e-4
+CRITIC_LR = 1e-2
 
-ACTOR_LR = 1e-4
+ACTOR_LR = 1e-2
 
-ENCODER_LR = 1e-4
+ENCODER_LR = 1e-2
 
 # frequency of logging (steps)
 LOG_FREQ = 10000
