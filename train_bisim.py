@@ -58,14 +58,19 @@ def get_action(env, agent, policy_reuse, obs, expert_config, epsilon):
 def evaluate(env, agent, L, step, n_episodes=5):
     """
     Evaluate agent on environment, averaged over n_episodes.
+    Also returns critic Q value estimates for the first observation.
     """
 
     episode_rewards = []
     episode_lengths = []
 
+    first_obs = None
+
     with utils.eval_mode(agent):
         for _ in range(n_episodes):
             obs = env.reset()
+            if first_obs is None:
+                first_obs = obs
             done = False
             episode_reward = 0
             episode_step = 0
@@ -86,6 +91,10 @@ def evaluate(env, agent, L, step, n_episodes=5):
             **traj,
         )
 
+        # get critic Q value (avg of Q1 & Q2) for first_obs and action = go straight
+        critic_q1, critic_q2 = agent.critic(first_obs, action, detach_encoder=True)
+        critic_q = (critic_q1 + critic_q2) / 2
+
     mean_reward = np.mean(episode_rewards)
     mean_length = np.mean(episode_lengths)
 
@@ -99,7 +108,7 @@ def evaluate(env, agent, L, step, n_episodes=5):
         f"[EVAL] Step {step}: mean reward: {mean_reward:.5f}, mean length: {mean_length}"
     )
 
-    return mean_reward, mean_length, std_reward, std_length
+    return mean_reward, mean_length, std_reward, std_length, critic_q
 
 
 def run_training(agent, env, policy_reuse, expert_config):
@@ -129,12 +138,12 @@ def run_training(agent, env, policy_reuse, expert_config):
         # evaluate agent periodically
         if step % config.EVAL_FREQ == 0:
             L.log("eval/episode", episode, step)
-            mean_reward, mean_length, std_reward, std_length = evaluate(
+            mean_reward, mean_length, std_reward, std_length, critic_q = evaluate(
                 env, agent, L, step
             )
             agent.save(config.MODEL_DIR, step)
-            # replay_buffer.save(buffer_dir)
 
+            # env should be reset after eval
             done = True
 
             wandb.log(
@@ -144,6 +153,7 @@ def run_training(agent, env, policy_reuse, expert_config):
                         "episode_length": mean_length,
                         "episode_reward_std": std_reward,
                         "episode_length_std": std_length,
+                        "critic_q": critic_q,
                     }
                 },
                 step=step,
@@ -156,16 +166,6 @@ def run_training(agent, env, policy_reuse, expert_config):
                 L.dump(step)
 
             L.log("train/episode_reward", episode_reward, step)
-
-            # wandb.log(
-            #     {
-            #         "train": {
-            #             "episode_reward": episode_reward,
-            #             "epsilon": epsilon,
-            #         }
-            #     },
-            #     step=step,
-            # )
 
             obs = env.reset()
             done = False
