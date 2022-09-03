@@ -133,12 +133,17 @@ class ReplayBuffer(object):
             self.idx = end
 
 
+def ensure_obs_dims(obs):
+    if obs.ndim == 3:
+        obs = np.expand_dims(obs, 0)
+    return obs
+
+
 def get_embedding(agent, obs, device):
     """
     Get embedding of observation.
     """
-    if obs.ndim == 3:
-        obs = np.expand_dims(obs, 0)
+    obs = ensure_obs_dims(obs)
     with eval_mode(agent.actor.encoder):
         emb = agent.actor.encoder(torch.tensor(obs).to(device)).detach().cpu().numpy()
     return emb
