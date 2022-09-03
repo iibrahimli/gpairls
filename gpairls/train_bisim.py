@@ -237,7 +237,10 @@ if __name__ == "__main__":
     RUN_NAME = f"{ENV_NAME}_bisim_{dt}"
 
     print(f"Control timestep: {env_config.CONTROL_TIMESTEP} ms")
-    print(f"Max steps per episode: {env_config.MAX_STEPS}")
+    print(
+        f"Max steps per episode: {env_config.MAX_STEPS} "
+        f"({env_config.MAX_TIME_MINUTES} minutes sim time)"
+    )
 
     wandb_config = {
         "datetime": dt,
@@ -246,7 +249,7 @@ if __name__ == "__main__":
             "step_reward": env_config.STEP_REWARD,
             "collision_reward": env_config.COLLISION_REWARD,
             "goal_reward": env_config.GOAL_REWARD,
-            "control_timestep": f"{env_config.CONTROL_TIMESTEP}ms",
+            "control_timestep": f"{env_config.CONTROL_TIMESTEP} ms",
             "max_steps": env_config.MAX_STEPS,
         },
         "training_steps": config.TRAINING_STEPS,
@@ -265,7 +268,8 @@ if __name__ == "__main__":
     }
 
     # initialize wandb
-    ppr_used = "ppr" if policy_reuse else "no-ppr"
+    print(policy_reuse, bool(policy_reuse))
+    ppr_used = "ppr" if policy_reuse is not None else "no-ppr"
     wandb_run_name = f"{expert_config.name}_{ppr_used}"
     wandb.init(
         project="gpairls",

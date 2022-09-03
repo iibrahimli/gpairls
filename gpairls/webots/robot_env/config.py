@@ -8,16 +8,17 @@ from pathlib import Path
 CONTROL_TIMESTEP = 500
 
 # max steps per episode (minutes * 60 * seconds_per_step)
-MAX_STEPS = round(10 * 60 * (1000 / CONTROL_TIMESTEP))
+MAX_TIME_MINUTES = 15
+MAX_STEPS = round(MAX_TIME_MINUTES * 60 * (1000 / CONTROL_TIMESTEP))
 
 # reward for not reaching the goal
-STEP_REWARD = -0.1
+STEP_REWARD = -0.01
 
 # reward for reaching the goal
-GOAL_REWARD = 100.
+GOAL_REWARD = 10.
 
 # reward for collision
-COLLISION_REWARD = -1.
+COLLISION_REWARD = -0.1
 
 # distance (meters) under which the goal is considered reached
 GOAL_DISTANCE_THRESHOLD = 0.1

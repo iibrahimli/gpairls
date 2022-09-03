@@ -19,7 +19,7 @@ class ExpertConfig:
 
     @property
     def name(self):
-        return f"avail={self.availability},acc={self.accuracy}"
+        return f"avail-{self.availability}_acc-{self.accuracy}"
 
 
 class ExpertPresets:

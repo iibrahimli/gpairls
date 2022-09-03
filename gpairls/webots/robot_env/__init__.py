@@ -1,2 +1,2 @@
 from .robot_env import RobotEnv
-import config
+from . import config
