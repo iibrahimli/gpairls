@@ -144,7 +144,7 @@ def get_embedding(agent, obs, device):
     return emb
 
 
-def get_trajectory(agent, env):
+def get_trajectory(agent, env, device):
     """Get trajectory from agent"""
     obss = []
     embs = []
@@ -159,7 +159,7 @@ def get_trajectory(agent, env):
 
         # append
         obss.append(obs)
-        embs.append(get_embedding(agent, obs))
+        embs.append(get_embedding(agent, obs, device))
         actions.append(action)
         rewards.append(reward)
 

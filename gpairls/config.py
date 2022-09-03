@@ -13,6 +13,7 @@ MODEL_DIR = LOG_DIR / "model"
 
 # directory for eval trajectories
 TRAJECTORY_DIR = LOG_DIR / "trajectories"
+TRAJECTORY_DIR.mkdir(parents=True, exist_ok=True)
 
 # random seed for reproducibility
 SEED = 42

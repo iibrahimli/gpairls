@@ -79,7 +79,7 @@ def evaluate(env, agent, L, step, n_episodes=5):
             episode_lengths.append(episode_step)
 
         # one more episode to save trajectory
-        traj = utils.get_trajectory(agent, env)
+        traj = utils.get_trajectory(agent, env, device)
         np.savez_compressed(config.TRAJECTORY_DIR / f"{step}.npz", **traj)
 
     mean_reward = np.mean(episode_rewards)
