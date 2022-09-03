@@ -93,7 +93,9 @@ def evaluate(env, agent, L, step, n_episodes=5):
         )
 
         # get critic Q value (avg of Q1 & Q2) for first_obs and action = go straight
-        critic_q1, critic_q2 = agent.critic(first_obs, action, detach_encoder=True)
+        critic_q1, critic_q2 = agent.critic(
+            torch.tensor(first_obs).to(device), action, detach_encoder=True
+        )
         critic_q = (critic_q1 + critic_q2) / 2
 
     mean_reward = np.mean(episode_rewards)
