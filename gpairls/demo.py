@@ -5,9 +5,9 @@ Load an agent and run in the environment.
 import torch
 import numpy as np
 
-import config
-from webots import RobotEnv
-from agent import BisimAgent
+from gpairls import config
+from gpairls.webots import RobotEnv
+from gpairls.agent import BisimAgent
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

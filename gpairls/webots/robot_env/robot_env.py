@@ -7,8 +7,8 @@ import gym
 import numpy as np
 import matplotlib.pyplot as plt
 
-from . import config
-from .epuck_supervisor import EpuckSupervisor
+from gpairls.webots.robot_env import config
+from gpairls.webots.robot_env.epuck_supervisor import EpuckSupervisor
 
 
 class RobotEnv(gym.Env):

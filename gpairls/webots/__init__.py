@@ -1,2 +1,1 @@
-from .robot_env import RobotEnv
-from .robot_env import config
+from .robot_env import config, RobotEnv

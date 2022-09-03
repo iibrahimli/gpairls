@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from .competence import ExpertConfig, ExpertPresets
+from gpairls.experts.competence import ExpertConfig, ExpertPresets
 
 
 class Expert(ABC):

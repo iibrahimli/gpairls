@@ -10,7 +10,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .encoder import MLPEncoder, CNNEncoder
+from gpairls import config
+from gpairls.model.encoder import CNNEncoder, MLPEncoder
 
 
 def gaussian_logprob(noise, log_std):
@@ -63,8 +64,11 @@ class Actor(nn.Module):
         super().__init__()
 
         encoder_args = (obs_shape, encoder_feature_dim)
+        encoder_kwargs = dict(
+            num_layers=config.ENCODER_NUM_LAYERS, num_filters=config.ENCODER_NUM_FILTERS
+        )
         self.encoder = {"mlp": MLPEncoder, "cnn": CNNEncoder}[encoder_type](
-            *encoder_args
+            *encoder_args, **encoder_kwargs
         )
 
         self.log_std_min = log_std_min
@@ -160,8 +164,11 @@ class Critic(nn.Module):
         super().__init__()
 
         encoder_args = (obs_shape, encoder_feature_dim)
+        encoder_kwargs = dict(
+            num_layers=config.ENCODER_NUM_LAYERS, num_filters=config.ENCODER_NUM_FILTERS
+        )
         self.encoder = {"mlp": MLPEncoder, "cnn": CNNEncoder}[encoder_type](
-            *encoder_args
+            *encoder_args, **encoder_kwargs
         )
 
         self.Q1 = QFunction(self.encoder.feature_dim, action_shape[0], hidden_dim)

@@ -14,13 +14,13 @@ import wandb
 import torch
 import numpy as np
 
-import config, utils
-from webots import RobotEnv
-from webots import config as env_config
-from ppr import PPR
-from experts import ExpertConfig
-from log import Logger
-from agent import BisimAgent
+from gpairls import config, utils
+from gpairls.webots import RobotEnv
+from gpairls.webots import config as env_config
+from gpairls.ppr import PPR
+from gpairls.experts import ExpertConfig
+from gpairls.log import Logger
+from gpairls.agent import BisimAgent
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -265,6 +265,8 @@ if __name__ == "__main__":
         "init_steps": config.INIT_STEPS,
         "hidden_dim": config.HIDDEN_DIM,
         "encoder_dim": config.ENCODER_FEATURE_DIM,
+        "encoder_num_layers": config.ENCODER_NUM_LAYERS,
+        "encoder_num_filters": config.ENCODER_NUM_FILTERS,
         "actor_lr": config.ACTOR_LR,
         "critic_lr": config.CRITIC_LR,
         "expert": {

@@ -30,6 +30,12 @@ ENCODER_TYPE = "cnn"
 # dimensionality of feature vector from encoder
 ENCODER_FEATURE_DIM = 32
 
+# number of conv layers in the CNN encoder
+ENCODER_NUM_LAYERS = 3
+
+# number of filters in each encoder conv layer
+ENCODER_NUM_FILTERS = 16
+
 # actor and critic hidden dimensions
 HIDDEN_DIM = 64
 

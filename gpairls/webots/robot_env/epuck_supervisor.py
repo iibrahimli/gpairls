@@ -11,11 +11,10 @@ import numpy as np
 from skimage.transform import resize
 
 sys.path.insert(0, "/Applications/Webots.app/lib/controller/python39") # local
-sys.path.insert(0, "/usr/local/webots/lib/controller/python38")  # wtmstuc
-from controller import Supervisor
+sys.path.insert(0, "/usr/local/webots/lib/controller/python38")  # server
+from controller import Supervisor # type: ignore
 
-from . import config
-from .utils import *
+from gpairls.webots.robot_env import config, utils
 
 
 class EpuckSupervisor:
@@ -161,7 +160,7 @@ class EpuckSupervisor:
                 self.sp_cache = None
 
         if self.sp_cache is None:
-            self.sp_cache = compute_shortest_path_astar(
+            self.sp_cache = utils.compute_shortest_path_astar(
                 self.occupancy_grid,
                 robot_grid_pos,
                 self._world_to_grid_coords(*tuple(self.goal_pos)[:2]),

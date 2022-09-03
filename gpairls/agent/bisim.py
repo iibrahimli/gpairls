@@ -11,9 +11,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import utils
-import config
-from model import (
+from gpairls import utils
+from gpairls import config
+from gpairls.model import (
     Actor,
     Critic,
     ProbabilisticTransitionModel,

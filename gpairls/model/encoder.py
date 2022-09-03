@@ -5,8 +5,6 @@ Encoder from state to a feature vector.
 import torch
 import torch.nn as nn
 
-import config
-
 
 def tie_weights(src, trg):
     assert type(src) == type(trg)

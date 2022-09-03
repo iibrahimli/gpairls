@@ -15,14 +15,13 @@ import gym
 import torch
 import numpy as np
 
-import config
-import utils
-from webots import RobotEnv
-from ppr import PPR
-from log import Logger
-from experts import MountainCarExpert
-from agent import BaselineAgent, BisimAgent
-from training_run import TrainingRun
+from gpairls import config, utils
+from gpairls.webots import RobotEnv
+from gpairls.ppr import PPR
+from gpairls.log import Logger
+from gpairls.experts import MountainCarExpert
+from gpairls.agent import BaselineAgent, BisimAgent
+from gpairls.training_run import TrainingRun
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
