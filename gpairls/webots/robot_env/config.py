@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 # milliseconds
-CONTROL_TIMESTEP = 500
+CONTROL_TIMESTEP = 1000
 
 # max steps per episode (minutes * 60 * seconds_per_step)
 MAX_TIME_MINUTES = 15

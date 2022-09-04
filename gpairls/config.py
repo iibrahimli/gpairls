@@ -34,20 +34,20 @@ ENCODER_FEATURE_DIM = 32
 ENCODER_NUM_LAYERS = 3
 
 # number of filters in each encoder conv layer
-ENCODER_NUM_FILTERS = 16
+ENCODER_NUM_FILTERS = 64
 
 # actor and critic hidden dimensions
-HIDDEN_DIM = 64
+HIDDEN_DIM = 16
 
 REPLAY_BUFFER_CAPACITY = 10_000
 
 BATCH_SIZE = 256
 
-CRITIC_LR = 1e-2
+CRITIC_LR = 1e-3
 
-ACTOR_LR = 1e-2
+ACTOR_LR = 1e-3
 
-ENCODER_LR = 1e-2
+ENCODER_LR = 1e-3
 
 # frequency of logging (steps)
 LOG_FREQ = 10000
