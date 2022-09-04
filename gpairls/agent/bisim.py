@@ -20,6 +20,10 @@ from gpairls.model import (
 )
 
 
+# maximum gradient norm
+GRAD_MAX_NORM = 20
+
+
 class BisimAgent:
     """Bisimulation metric algorithm."""
 
@@ -180,7 +184,7 @@ class BisimAgent:
         # Optimize the critic
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
-        nn.utils.clip_grad_value_(self.critic.parameters(), clip_value=1.0)
+        nn.utils.clip_grad_norm_(self.critic.parameters(), max_norm=GRAD_MAX_NORM)
         self.critic_optimizer.step()
 
         self.critic.log(L, step, config.LOG_FREQ)
@@ -205,7 +209,7 @@ class BisimAgent:
         # optimize the actor
         self.actor_optimizer.zero_grad()
         actor_loss.backward()
-        nn.utils.clip_grad_value_(self.actor.parameters(), clip_value=1.0)
+        nn.utils.clip_grad_norm_(self.actor.parameters(), max_norm=GRAD_MAX_NORM)
         self.actor_optimizer.step()
 
         self.actor.log(L, step, config.LOG_FREQ)
@@ -293,11 +297,11 @@ class BisimAgent:
         self.decoder_optimizer.zero_grad()
         total_loss.backward()
         # params for encoder_optimizer and decoder_optimizer
-        nn.utils.clip_grad_value_(self.critic.encoder.parameters(), clip_value=1.0)
-        nn.utils.clip_grad_value_(
+        nn.utils.clip_grad_norm_(self.critic.encoder.parameters(), max_norm=GRAD_MAX_NORM)
+        nn.utils.clip_grad_norm_(
             list(self.reward_decoder.parameters())
             + list(self.transition_model.parameters()),
-            clip_value=1.0,
+            max_norm=GRAD_MAX_NORM,
         )
         self.encoder_optimizer.step()
         self.decoder_optimizer.step()
