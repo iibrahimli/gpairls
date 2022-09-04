@@ -46,6 +46,7 @@ class BisimAgent:
         encoder_feature_dim=config.ENCODER_FEATURE_DIM,
         encoder_lr=config.ENCODER_LR,
         encoder_tau=0.005,
+        decoder_dim=config.DECODER_DIM,
         decoder_lr=config.ENCODER_LR,
         decoder_update_freq=1,
         decoder_latent_lambda=0.0,
@@ -95,10 +96,10 @@ class BisimAgent:
         ).to(device)
 
         self.reward_decoder = nn.Sequential(
-            nn.Linear(encoder_feature_dim, 512),
-            nn.LayerNorm(512),
+            nn.Linear(encoder_feature_dim, decoder_dim),
+            nn.LayerNorm(decoder_dim),
             nn.ReLU(),
-            nn.Linear(512, 1),
+            nn.Linear(decoder_dim, 1),
         ).to(device)
 
         # tie encoders between actor and critic

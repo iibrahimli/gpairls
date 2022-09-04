@@ -39,6 +39,9 @@ ENCODER_NUM_FILTERS = 64
 # actor and critic hidden dimensions
 HIDDEN_DIM = 16
 
+# neurons in reward decoder hidden layers
+DECODER_DIM = 64
+
 REPLAY_BUFFER_CAPACITY = 10_000
 
 BATCH_SIZE = 256
@@ -47,6 +50,7 @@ CRITIC_LR = 1e-3
 
 ACTOR_LR = 1e-3
 
+# is also the decoder LR
 ENCODER_LR = 1e-3
 
 # frequency of logging (steps)
