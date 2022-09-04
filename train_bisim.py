@@ -272,6 +272,8 @@ if __name__ == "__main__":
             "num_filters": config.ENCODER_NUM_FILTERS,
             "lr": config.ENCODER_LR,
         },
+        "decoder_dim": config.DECODER_DIM,
+        "transition_model_dim": config.TRANSITION_MODEL_DIM,
         "training_steps": config.TRAINING_STEPS,
         "eval_freq": config.EVAL_FREQ,
         "batch_size": config.BATCH_SIZE,
