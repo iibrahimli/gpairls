@@ -103,8 +103,7 @@ class CNNEncoder(nn.Module):
 
     def forward_conv(self, obs):
         # normalize obs to [-1, 1]
-        half_range = 255.0 / 2
-        obs = (obs - half_range) / half_range
+        obs = obs / 255.
 
         self.outputs["obs"] = obs
 
