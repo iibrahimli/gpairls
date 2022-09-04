@@ -51,6 +51,7 @@ class BisimAgent:
         decoder_update_freq=1,
         decoder_latent_lambda=0.0,
         decoder_weight_lambda=0.0,
+        transition_model_dim=config.TRANSITION_MODEL_DIM,
         bisim_coef=0.5,
     ):
         self.device = device
@@ -92,7 +93,7 @@ class BisimAgent:
         self.critic_target.load_state_dict(self.critic.state_dict())
 
         self.transition_model = ProbabilisticTransitionModel(
-            encoder_feature_dim, action_shape
+            encoder_feature_dim, action_shape, transition_model_dim
         ).to(device)
 
         self.reward_decoder = nn.Sequential(

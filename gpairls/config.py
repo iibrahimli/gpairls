@@ -42,6 +42,9 @@ HIDDEN_DIM = 16
 # neurons in reward decoder hidden layers
 DECODER_DIM = 64
 
+# neurons in transition model hidden layer
+TRANSITION_MODEL_DIM = 32
+
 REPLAY_BUFFER_CAPACITY = 10_000
 
 BATCH_SIZE = 256
