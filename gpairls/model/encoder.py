@@ -102,7 +102,10 @@ class CNNEncoder(nn.Module):
         return mu + eps * std
 
     def forward_conv(self, obs):
-        obs = obs / 255.0
+        # normalize obs to [-1, 1]
+        half_range = 255.0 / 2
+        obs = (obs - half_range) / half_range
+
         self.outputs["obs"] = obs
 
         conv = torch.relu(self.convs[0](obs))
