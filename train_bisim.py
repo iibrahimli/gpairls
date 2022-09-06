@@ -110,6 +110,12 @@ def evaluate(env, agent, L, step, n_episodes=5):
     L.log("eval/episode_reward", mean_reward, step)
     L.log("eval/episode_length", mean_length, step)
 
+    # log GIF
+    wandb.log(
+        {"occ_grid": wandb.Video(traj["occ_grids"][::4], fps=4, format="gif")},
+        step=step,
+    )
+
     print(
         f"[EVAL] Step {step}: mean reward: {mean_reward:.5f}, mean length: {mean_length}"
     )

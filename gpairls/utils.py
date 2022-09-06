@@ -156,6 +156,7 @@ def get_embedding(agent, obs, device):
 def get_trajectory(agent, env, device):
     """Get trajectory from agent"""
     obss = []
+    occ_grids = []
     embs = []
     actions = []
     rewards = []
@@ -165,9 +166,11 @@ def get_trajectory(agent, env, device):
     while not done:
         action = agent.sample_action(obs)
         next_obs, reward, done, _ = env.step(action)
+        occ_grid = env.get_occupancy_grid_image()
 
         # append
         obss.append(obs)
+        occ_grids.append(occ_grid)
         embs.append(get_embedding(agent, obs, device))
         actions.append(action)
         rewards.append(reward)

@@ -143,6 +143,12 @@ class RobotEnv(gym.Env):
         Get the expert action from current state.
         """
         return self.controller.get_expert_action(expert_config)
+    
+    def get_occupancy_grid_image(self):
+        """
+        Get occupancy grid as an image
+        """
+        return self.controller.render_occupancy_grid()
 
     def _get_obs(self):
         """
