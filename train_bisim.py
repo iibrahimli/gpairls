@@ -88,7 +88,7 @@ def evaluate(env, agent, L, step, n_episodes=5):
         traj = utils.get_trajectory(agent, env, device)
         total_reward = traj["rewards"].sum()
         np.savez_compressed(
-            config.TRAJECTORY_DIR / f"step-{step}_reward-{total_reward:.1f}.npz",
+            config.TRAJECTORY_DIR / f"step{step}_reward{total_reward:.1f}.npz",
             **traj,
         )
 
