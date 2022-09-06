@@ -15,6 +15,9 @@ MODEL_DIR = LOG_DIR / "model"
 TRAJECTORY_DIR = LOG_DIR / "trajectories"
 TRAJECTORY_DIR.mkdir(parents=True, exist_ok=True)
 
+# directory for model config
+MODEL_CONFIG_PATH = LOG_DIR / "model_config.yaml"
+
 # random seed for reproducibility
 SEED = 42
 
@@ -28,22 +31,22 @@ INIT_STEPS = 1000
 ENCODER_TYPE = "cnn"
 
 # dimensionality of feature vector from encoder
-ENCODER_FEATURE_DIM = 16
+ENCODER_FEATURE_DIM = 32
 
 # number of conv layers in the CNN encoder
 ENCODER_NUM_LAYERS = 3
 
 # number of filters in each encoder conv layer
-ENCODER_NUM_FILTERS = 16
+ENCODER_NUM_FILTERS = 64
 
 # actor and critic hidden dimensions
-HIDDEN_DIM = 16
+HIDDEN_DIM = 64
 
 # neurons in reward decoder hidden layers
-DECODER_DIM = 16
+DECODER_DIM = 64
 
 # neurons in transition model hidden layer
-TRANSITION_MODEL_DIM = 16
+TRANSITION_MODEL_DIM = 64
 
 REPLAY_BUFFER_CAPACITY = 50_000
 

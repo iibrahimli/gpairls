@@ -5,11 +5,15 @@ Based on DBC code (https://github.com/facebookresearch/deep_bisim4control)
 """
 
 import os
+import copy
 import random
+import yaml
 from typing import Dict
 
 import torch
 import numpy as np
+
+from gpairls import config
 
 
 def set_seed_everywhere(seed):
@@ -169,7 +173,7 @@ def get_trajectory(agent, env, device):
         rewards.append(reward)
 
         obs = next_obs
-    
+
     traj = {
         "obs": np.array(obss),
         "embs": np.array(embs),
@@ -209,3 +213,37 @@ def save_trajectory(
 def load_trajectory(path: str) -> Dict[str, np.ndarray]:
     """Load trajectory saved by save_trajectory"""
     return np.load(path)
+
+
+_MODEL_CONFIG_KEYS = (
+    "ENCODER_NUM_LAYERS",
+    "ENCODER_NUM_FILTERS",
+    "HIDDEN_DIM",
+    "DECODER_DIM",
+    "TRANSITION_MODEL_DIM",
+)
+
+
+def save_model_config(path=None):
+    """Save model stuff to a YAML file for loading later"""
+    model_config = {}
+    for k in _MODEL_CONFIG_KEYS:
+        model_config[k.lower()] = getattr(config, k)
+    path = path or config.MODEL_CONFIG_PATH
+    with open(path, "w") as f:
+        yaml.dump(model_config, f)
+
+
+def load_model_config(path=None):
+    """Load model config from YAML"""
+    path = path or config.MODEL_CONFIG_PATH
+    with open(path, "r") as f:
+        model_config = yaml.safe_load(f)
+    return model_config
+
+
+def patch_config_with_model_config(config, model_config: Dict):
+    config_copy = copy.deepcopy(config)
+    for k, v in model_config:
+        setattr(config_copy, k.upper(), v)
+    return config_copy

@@ -2,10 +2,12 @@
 Load an agent and run in the environment.
 """
 
-import torch
-import numpy as np
+import argparse
+import pathlib
 
-from gpairls import config
+import torch
+
+from gpairls import config, utils
 from gpairls.webots import RobotEnv
 from gpairls.agent import BisimAgent
 
@@ -14,8 +16,22 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--checkpoint",
+        metavar="PATH",
+        required=True,
+        type=pathlib.Path,
+        help="Path to the model directory",
+    )
+    args = ap.parse_args()
 
     env = RobotEnv()
+
+    model_config = utils.load_model_config(
+        args.checkpoint / config.MODEL_CONFIG_PATH.name
+    )
+    config = utils.patch_config_with_model_config(config, model_config)
 
     agent = BisimAgent(
         obs_shape=env.observation_space.shape,
@@ -24,12 +40,10 @@ if __name__ == "__main__":
         device=device,
     )
 
-    checkpoint_dir = "logs/model"
+    agent.load(args.checkpoint, None)
+    print("Loaded model from", args.checkpoint)
 
-    agent.load(checkpoint_dir, 0)
-    print("Loaded model from", checkpoint_dir)
-
-    for episode in range(100):
+    for episode in range(10):
         obs = env.reset()
         done = False
         step = 0
@@ -41,4 +55,6 @@ if __name__ == "__main__":
             # env.render(show_occupancy_grid=True)
             episode_reward += reward
             step += 1
+        print()
         print(f"Episode {episode}   reward: {episode_reward:.3f}")
+        print()
