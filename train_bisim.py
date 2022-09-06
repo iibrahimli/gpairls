@@ -291,12 +291,12 @@ if __name__ == "__main__":
     }
 
     # initialize wandb
-    ppr_used = "ppr" if policy_reuse is not None else "no-ppr"
-    wandb_run_name = f"{expert_config.name}_{ppr_used}"
+    # ppr_used = "ppr" if policy_reuse is not None else "no-ppr"
+    # wandb_run_name = f"{expert_config.name}_{ppr_used}"
     wandb.init(
         project="gpairls",
         entity="iibrahimli",
-        name=wandb_run_name,
+        # name=wandb_run_name,
         config=wandb_config,
     )
     wandb.watch((agent.actor, agent.critic, agent.transition_model))
