@@ -243,6 +243,6 @@ def load_model_config(path=None):
 
 
 def patch_config_with_model_config(config, model_config: Dict):
-    for k, v in model_config:
+    for k, v in model_config.items():
         setattr(config, k.upper(), v)
     return config
