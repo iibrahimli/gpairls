@@ -243,7 +243,6 @@ def load_model_config(path=None):
 
 
 def patch_config_with_model_config(config, model_config: Dict):
-    config_copy = copy.deepcopy(config)
     for k, v in model_config:
-        setattr(config_copy, k.upper(), v)
-    return config_copy
+        setattr(config, k.upper(), v)
+    return config
