@@ -37,22 +37,26 @@ class PPR:
     (actions), retrieves the advice based on embedding distance and
 
     Attributes:
+        max_size: Maximum number of elements.
         vals: A list of tuples of (embedding (np arrays), ActionNode).
         init_prob: The initial probability of an action being chosen.
         decay_rate: The rate at which the probability is reduced on each step.
     """
 
-    def __init__(self, init_prob: float = 0.8, decay_rate: float = 0.05):
+    def __init__(
+        self, max_size: int = 1000, init_prob: float = 0.8, decay_rate: float = 0.05
+    ):
         """
         Initialize a PPR object with given initial probability and decay rate.
         """
         self.vals: List[ActionNode] = []
         self.init_prob = init_prob
         self.decay_rate = decay_rate
+        self.max_size = max_size
 
     def __repr__(self) -> str:
-        return f"PPR(init={self.init_prob}, decay={self.decay_rate}, vals={self.vals})"
-    
+        return f"PPR(init={self.init_prob}, decay={self.decay_rate}, {len(self.vals)} vals)"
+
     def __len__(self) -> int:
         return len(self.vals)
 
@@ -75,7 +79,8 @@ class PPR:
                 self.vals[i].action = action
                 self.vals[i].prob = self.init_prob
                 return
-        self.vals.append(ActionNode(emb, action, self.init_prob))
+        if len(self.vals) < self.max_size:
+            self.vals.append(ActionNode(emb, action, self.init_prob))
 
     def get(self, emb: np.ndarray) -> Tuple[Any, float]:
         """

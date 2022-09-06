@@ -241,7 +241,7 @@ if __name__ == "__main__":
 
     expert_config = ExpertConfig(availability=1.0, accuracy=1.0)
 
-    policy_reuse = PPR(init_prob=0.8, decay_rate=0.001)
+    policy_reuse = PPR(max_size=10_000, init_prob=0.8, decay_rate=0.001)
 
     dt = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     RUN_NAME = f"{ENV_NAME}_bisim_{dt}"
