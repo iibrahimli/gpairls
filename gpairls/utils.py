@@ -5,7 +5,6 @@ Based on DBC code (https://github.com/facebookresearch/deep_bisim4control)
 """
 
 import os
-import copy
 import random
 import yaml
 from typing import Dict
