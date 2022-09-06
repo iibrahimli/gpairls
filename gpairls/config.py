@@ -28,33 +28,33 @@ INIT_STEPS = 1000
 ENCODER_TYPE = "cnn"
 
 # dimensionality of feature vector from encoder
-ENCODER_FEATURE_DIM = 32
+ENCODER_FEATURE_DIM = 16
 
 # number of conv layers in the CNN encoder
 ENCODER_NUM_LAYERS = 3
 
 # number of filters in each encoder conv layer
-ENCODER_NUM_FILTERS = 64
+ENCODER_NUM_FILTERS = 16
 
 # actor and critic hidden dimensions
-HIDDEN_DIM = 64
+HIDDEN_DIM = 16
 
 # neurons in reward decoder hidden layers
-DECODER_DIM = 64
+DECODER_DIM = 16
 
 # neurons in transition model hidden layer
-TRANSITION_MODEL_DIM = 64
+TRANSITION_MODEL_DIM = 16
 
-REPLAY_BUFFER_CAPACITY = 25_000
+REPLAY_BUFFER_CAPACITY = 50_000
 
 BATCH_SIZE = 128
 
-CRITIC_LR = 1e-4
+CRITIC_LR = 1e-3
 
-ACTOR_LR = 1e-5
+ACTOR_LR = 1e-3
 
 # is also the decoder LR
-ENCODER_LR = 1e-5
+ENCODER_LR = 1e-3
 
 # frequency of logging (steps)
 LOG_FREQ = 10000
@@ -63,4 +63,4 @@ LOG_FREQ = 10000
 EVAL_FREQ = 10000
 
 # frequency of W&B logging
-WANDB_LOG_FREQ = 10
+WANDB_LOG_FREQ = 20
