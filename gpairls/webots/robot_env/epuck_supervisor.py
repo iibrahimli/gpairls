@@ -187,7 +187,7 @@ class EpuckSupervisor:
         if np.random.uniform() > expert_config.accuracy:
             return np.random.uniform(-1, 1)
 
-        MIN_NEXT_STEPS = 3
+        MIN_NEXT_STEPS = 5
         robot_pos = tuple(self.robot.getSelf().getPosition())[:2]
         robot_orientation = self.robot.getSelf().getField("rotation").getSFRotation()
         robot_angle = robot_orientation[-1]  # radians, x-axis is "down"
@@ -331,7 +331,7 @@ class EpuckSupervisor:
                 self._move_node(robot_node, [x, y, obj_z])
 
                 # check for collisions
-                occ_grid[i, j] = self.touch_sensor.getValue()
+                occ_grid[i, j] = np.nan_to_num(self.touch_sensor.getValue())
 
                 self.robot.step(1)
 
@@ -341,9 +341,9 @@ class EpuckSupervisor:
         self.robot.step(1)
 
         # dilate occupancy grid to add buffer around obstacles (more in vertical)
-        vertical_line = np.ones((3, 1))
+        vertical_line = np.ones((5, 1))
         occ_grid = binary_dilation(occ_grid, footprint=vertical_line)
-        occ_grid = binary_dilation(occ_grid, footprint=disk(1))
+        occ_grid = binary_dilation(occ_grid, footprint=disk(2))
         occ_grid = occ_grid.astype(np.int8)
 
         np.save(config.OCCUPANCY_GRID_PATH, occ_grid)

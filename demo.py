@@ -8,6 +8,7 @@ import pathlib
 import torch
 
 from gpairls import config, utils
+from gpairls.experts import ExpertConfig
 from gpairls.webots import RobotEnv
 from gpairls.agent import BisimAgent
 
@@ -44,6 +45,8 @@ if __name__ == "__main__":
         device=device,
     )
 
+    expert_config = ExpertConfig(1, 1)
+
     agent.load(args.checkpoint, None)
     print("Loaded model from", args.checkpoint)
 
@@ -56,7 +59,7 @@ if __name__ == "__main__":
             action = agent.sample_action(obs)
             obs, reward, done, info = env.step(action)
             print(f"step {step} - action: {action[0]:.4f} - reward: {reward:.4f}")
-            # env.render(show_occupancy_grid=True)
+            env.render(show_occupancy_grid=True)
             episode_reward += reward
             step += 1
         print()
