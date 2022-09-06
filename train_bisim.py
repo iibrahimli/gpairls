@@ -228,6 +228,8 @@ if __name__ == "__main__":
         obs_shape=env.observation_space.shape,
         action_shape=env.action_space.shape,
         hidden_dim=config.HIDDEN_DIM,
+        encoder_num_layers=config.ENCODER_NUM_LAYERS,
+        encoder_num_filters=config.ENCODER_NUM_FILTERS,
         device=device,
     )
 
@@ -284,6 +286,12 @@ if __name__ == "__main__":
         "hidden_dim": config.HIDDEN_DIM,
         "actor_lr": config.ACTOR_LR,
         "critic_lr": config.CRITIC_LR,
+        "param_counts": {
+            "encoder": utils.param_count(agent.actor.encoder),
+            "actor": utils.param_count(agent.actor),
+            "critic": utils.param_count(agent.critic),
+            "transition_model": utils.param_count(agent.transition_model),
+        },
         "expert": {
             "availability": expert_config.availability,
             "accuracy": expert_config.accuracy,

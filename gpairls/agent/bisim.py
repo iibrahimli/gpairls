@@ -48,6 +48,8 @@ class BisimAgent:
         critic_target_update_freq=2,
         encoder_type="cnn",
         encoder_feature_dim=config.ENCODER_FEATURE_DIM,
+        encoder_num_layers=config.ENCODER_NUM_LAYERS,
+        encoder_num_filters=config.ENCODER_NUM_FILTERS,
         encoder_lr=config.ENCODER_LR,
         encoder_tau=0.005,
         decoder_dim=config.DECODER_DIM,
@@ -74,6 +76,8 @@ class BisimAgent:
             hidden_dim,
             encoder_type,
             encoder_feature_dim,
+            encoder_num_layers,
+            encoder_num_filters,
             actor_log_std_min,
             actor_log_std_max,
         ).to(device)
@@ -84,6 +88,8 @@ class BisimAgent:
             hidden_dim,
             encoder_type,
             encoder_feature_dim,
+            encoder_num_layers,
+            encoder_num_filters,
         ).to(device)
 
         self.critic_target = Critic(
@@ -92,6 +98,8 @@ class BisimAgent:
             hidden_dim,
             encoder_type,
             encoder_feature_dim,
+            encoder_num_layers,
+            encoder_num_filters,
         ).to(device)
 
         self.critic_target.load_state_dict(self.critic.state_dict())
@@ -297,7 +305,9 @@ class BisimAgent:
         self.decoder_optimizer.zero_grad()
         total_loss.backward()
         # params for encoder_optimizer and decoder_optimizer
-        nn.utils.clip_grad_norm_(self.critic.encoder.parameters(), max_norm=GRAD_MAX_NORM)
+        nn.utils.clip_grad_norm_(
+            self.critic.encoder.parameters(), max_norm=GRAD_MAX_NORM
+        )
         nn.utils.clip_grad_norm_(
             list(self.reward_decoder.parameters())
             + list(self.transition_model.parameters()),

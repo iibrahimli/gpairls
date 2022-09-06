@@ -216,6 +216,7 @@ def load_trajectory(path: str) -> Dict[str, np.ndarray]:
 
 
 _MODEL_CONFIG_KEYS = (
+    "ENCODER_FEATURE_DIM",
     "ENCODER_NUM_LAYERS",
     "ENCODER_NUM_FILTERS",
     "HIDDEN_DIM",
@@ -242,7 +243,5 @@ def load_model_config(path=None):
     return model_config
 
 
-def patch_config_with_model_config(config, model_config: Dict):
-    for k, v in model_config.items():
-        setattr(config, k.upper(), v)
-    return config
+def param_count(model):
+    return sum(param.numel() for param in model.parameters())

@@ -58,17 +58,15 @@ class Actor(nn.Module):
         hidden_dim,
         encoder_type,
         encoder_feature_dim,
+        encoder_num_layers,
+        encoder_num_filters,
         log_std_min,
         log_std_max,
     ):
         super().__init__()
 
-        encoder_args = (obs_shape, encoder_feature_dim)
-        encoder_kwargs = dict(
-            num_layers=config.ENCODER_NUM_LAYERS, num_filters=config.ENCODER_NUM_FILTERS
-        )
         self.encoder = {"mlp": MLPEncoder, "cnn": CNNEncoder}[encoder_type](
-            *encoder_args, **encoder_kwargs
+            obs_shape, encoder_feature_dim, encoder_num_layers, encoder_num_filters
         )
 
         self.log_std_min = log_std_min
@@ -160,15 +158,13 @@ class Critic(nn.Module):
         hidden_dim,
         encoder_type,
         encoder_feature_dim,
+        encoder_num_layers,
+        encoder_num_filters,
     ):
         super().__init__()
 
-        encoder_args = (obs_shape, encoder_feature_dim)
-        encoder_kwargs = dict(
-            num_layers=config.ENCODER_NUM_LAYERS, num_filters=config.ENCODER_NUM_FILTERS
-        )
         self.encoder = {"mlp": MLPEncoder, "cnn": CNNEncoder}[encoder_type](
-            *encoder_args, **encoder_kwargs
+            obs_shape, encoder_feature_dim, encoder_num_layers, encoder_num_filters
         )
 
         self.Q1 = QFunction(self.encoder.feature_dim, action_shape[0], hidden_dim)

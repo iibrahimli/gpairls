@@ -28,15 +28,19 @@ if __name__ == "__main__":
 
     env = RobotEnv()
 
-    model_config = utils.load_model_config(
+    mconf = utils.load_model_config(
         args.checkpoint / config.MODEL_CONFIG_PATH.name
     )
-    config = utils.patch_config_with_model_config(config, model_config)
 
     agent = BisimAgent(
         obs_shape=env.observation_space.shape,
         action_shape=env.action_space.shape,
-        hidden_dim=config.HIDDEN_DIM,
+        hidden_dim=mconf["hidden_dim"],
+        encoder_feature_dim=mconf["encoder_feature_dim"],
+        encoder_num_layers=mconf["encoder_num_layers"],
+        encoder_num_filters=mconf["encoder_num_filters"],
+        decoder_dim=mconf["decoder_dim"],
+        transition_model_dim=mconf["transition_model_dim"],
         device=device,
     )
 
