@@ -112,9 +112,9 @@ def evaluate(env, agent, L, step, n_episodes=5):
     L.log("eval/episode_length", mean_length, step)
 
     # log GIF
-    logger.info(f'{traj["occ_grids"][::4].shape}, {traj["occ_grids"][::4].dtype}')
+    video_arr = traj["occ_grids"][::4]
     wandb.log(
-        {"occ_grid": wandb.Video(traj["occ_grids"][::4], fps=4, format="gif")},
+        {"occ_grid": wandb.Video(video_arr.transpose(0, 3, 1, 2), fps=4, format="gif")},
         step=step,
     )
 
