@@ -6,14 +6,15 @@ gym environment and the experiment world in Webots.
 import sys
 import math
 from pathlib import Path
+from typing import Tuple
 
 import numpy as np
 from skimage.transform import resize
-from skimage.morphology import binary_dilation, disk
+from loguru import logger
 
-sys.path.insert(0, "/Applications/Webots.app/lib/controller/python39") # local
+sys.path.insert(0, "/Applications/Webots.app/lib/controller/python39")  # local
 sys.path.insert(0, "/usr/local/webots/lib/controller/python38")  # server
-from controller import Supervisor # type: ignore
+from controller import Supervisor  # type: ignore
 
 from gpairls.webots.robot_env import config, utils
 
@@ -59,19 +60,13 @@ class EpuckSupervisor:
         self.arena_size = (
             self.robot.getFromDef("arena").getField("floorSize").getSFVec2f()
         )
-        if Path(config.OCCUPANCY_GRID_PATH).is_file():
-            self.occupancy_grid = np.load(config.OCCUPANCY_GRID_PATH)
-        else:
-            self.occupancy_grid = self._compute_occupancy_grid()
 
-        # shortest path cache
-        self.sp_cache = None
+        self.occupancy_grid = None
+        self.advice_grid = None
+        self._ensure_expert_data()
 
         # step once so that camera image is available
         self.step()
-
-    def __del__(self):
-        del self.robot
 
     def move(self, direction):
         """
@@ -82,14 +77,22 @@ class EpuckSupervisor:
             direction (float): The direction to move in, a degree in range [-1, 1]
                 where -1 is left and 1 is right and 0 is forward.
         """
-        v_l = v_r = self.max_velocity
-        if direction < 0:
-            v_l *= 1 - abs(direction)
-        elif direction > 0:
-            v_r *= 1 - abs(direction)
+        cur_vl = self.left_motor.getVelocity()
+        cur_vr = self.right_motor.getVelocity()
+        vl = vr = self.max_velocity
 
-        self.left_motor.setVelocity(v_l)
-        self.right_motor.setVelocity(v_r)
+        if direction < 0:
+            vl *= 1 - abs(direction)
+        elif direction > 0:
+            vr *= 1 - abs(direction)
+
+        # smooth v
+        ALPHA = 0.9
+        vl = np.clip(ALPHA * vl + (1 - ALPHA) * cur_vl, 0, self.max_velocity)
+        vr = np.clip(ALPHA * vr + (1 - ALPHA) * cur_vr, 0, self.max_velocity)
+
+        self.left_motor.setVelocity(vl)
+        self.right_motor.setVelocity(vr)
 
     def get_cam_image(self):
         """
@@ -119,14 +122,12 @@ class EpuckSupervisor:
         """
         Step the robot forward one timestep and return -1 if simulation ends.
         """
-
         return self.robot.step(self.timestep)
 
     def reset(self):
         """
         Reset the simulation.
         """
-
         # reset robot
         robot_node = self.robot.getSelf()
         self._move_node(robot_node, self.init_robot_pos, ori=self.init_robot_ori)
@@ -138,7 +139,7 @@ class EpuckSupervisor:
         self._reset_motors()
         self.step()
 
-    def compute_distance_to_goal(self):
+    def compute_distance_to_goal(self) -> float:
         """
         Compute the distance to the goal.
 
@@ -148,26 +149,6 @@ class EpuckSupervisor:
         robot_pos = np.array(self.robot.getSelf().getPosition())
         dist = np.linalg.norm(robot_pos - np.array(self.goal_pos))
         return dist
-
-    def get_shortest_path(self, robot_pos):
-        # re-compute path if robot position has changed a lot from last time
-        robot_grid_pos = self._world_to_grid_coords(*robot_pos)
-        if self.sp_cache is not None and len(self.sp_cache) > 1:
-            if (
-                abs(robot_grid_pos[0] - self.sp_cache[0][0])
-                + abs(robot_grid_pos[1] - self.sp_cache[0][1])
-                > 4
-            ):
-                self.sp_cache = None
-
-        if self.sp_cache is None:
-            self.sp_cache = utils.compute_shortest_path_astar(
-                self.occupancy_grid,
-                robot_grid_pos,
-                self._world_to_grid_coords(*tuple(self.goal_pos)[:2]),
-            )
-
-        return self.sp_cache
 
     def get_expert_action(self, expert_config):
         """
@@ -180,31 +161,24 @@ class EpuckSupervisor:
             if the robot is at the goal or the goal is unreachable from robot's
             position (the latter shouldn't happen).
         """
-
         if np.random.uniform() > expert_config.availability:
             return None
 
         if np.random.uniform() > expert_config.accuracy:
             return np.random.uniform(-1, 1)
 
-        MIN_NEXT_STEPS = 5
         robot_pos = tuple(self.robot.getSelf().getPosition())[:2]
+        robot_cell = self._world_to_grid_coords(*robot_pos)
         robot_orientation = self.robot.getSelf().getField("rotation").getSFRotation()
         robot_angle = robot_orientation[-1]  # radians, x-axis is "down"
 
-        # compute shortest path
-        shortest_path = self.get_shortest_path(robot_pos)
-        if len(shortest_path) < MIN_NEXT_STEPS:
-            return None
+        # compute optimal direction
+        advice_angle = self.advice_grid[robot_cell]
 
-        # compute direction towards the next grid cell
-        next_x, next_y = self._grid_to_world_coords(*shortest_path[MIN_NEXT_STEPS - 1])
-        next_angle = math.atan2(next_y - robot_pos[1], next_x - robot_pos[0])
-
-        # robot angle and next angle are in range [-pi, pi]
+        # robot_angle and next_angle are in range [-pi, pi]
         # therefore, the angle difference is in range [-2pi, 2pi]
         # need to normalize it to [-1, 1]
-        angle_diff = next_angle - robot_angle
+        angle_diff = advice_angle - robot_angle
         if angle_diff > math.pi:
             angle_diff -= 2 * math.pi
         elif angle_diff < -math.pi:
@@ -213,13 +187,14 @@ class EpuckSupervisor:
         # normalize angle difference to [-1, 1]
         angle_diff /= math.pi
 
-        if np.abs(angle_diff) < 0.1:
-            return -angle_diff
+        if np.abs(angle_diff) < 0.5:
+            return angle_diff
         else:
             # angle too large - turn as much as you can
-            return np.sign(-angle_diff)
+            return np.sign(angle_diff)
 
-    def is_collided(self):
+
+    def is_collided(self) -> bool:
         """
         Check if the robot is collided.
 
@@ -253,11 +228,13 @@ class EpuckSupervisor:
 
         # move to new position
         self._move_node(self.robot.getSelf(), new_pos.tolist())
+        self._reset_motors()
 
-    def render_occupancy_grid(self):
+    def render_occupancy_grid(self) -> np.ndarray:
         """
         Render the occupancy grid.
         """
+
         def _mark_position(grid, x, y, size, value):
             grid[x : x + size, y : y + size] = value
 
@@ -297,7 +274,7 @@ class EpuckSupervisor:
 
         return occ_grid_img
 
-    def _compute_occupancy_grid(self):
+    def compute_occupancy_grid(self) -> np.ndarray:
         """
         Compute the occupancy grid of the simulation arena. This implementation
         is slow and advances the simulation, therefore is only used once during
@@ -318,8 +295,8 @@ class EpuckSupervisor:
         goal_node = self.robot.getFromDef("goal")
         self._move_node(goal_node, [arena_x, arena_y, 0])
 
-        # move touch sensor to the center of each grid cell to check for
-        # collisions, remove the object afterwards
+        # move touch sensor (and the robot to which it is attached) to the
+        # center of each grid cell to check for collisions
 
         self.robot.step(1)
 
@@ -337,20 +314,42 @@ class EpuckSupervisor:
 
         # move robot and goal back to their original position
         self.reset()
-
         self.robot.step(1)
-
-        # dilate occupancy grid to add buffer around obstacles (more in vertical)
-        vertical_line = np.ones((5, 1))
-        occ_grid = binary_dilation(occ_grid, footprint=vertical_line)
-        occ_grid = binary_dilation(occ_grid, footprint=disk(2))
-        occ_grid = occ_grid.astype(np.int8)
-
         np.save(config.OCCUPANCY_GRID_PATH, occ_grid)
-
         return occ_grid
 
-    def _world_to_grid_coords(self, x, y):
+    def compute_advice_grid(self) -> np.ndarray:
+        """
+        Precompute the expert advice grid. The grid has shape [H, W] and
+        where each cell represents the optimal direction to take at each cell
+        """
+        goal_cell = self._world_to_grid_coords(*tuple(self.goal_pos)[:2])
+        advice_grid = utils.compute_advice_grid(self.occupancy_grid, goal_cell)
+        np.save(config.ADVICE_GRID_PATH, advice_grid)
+        return advice_grid
+
+    def _ensure_expert_data(self):
+        """
+        Load stuff for expert model, precompute if necessary
+        Sets:
+         - self.occupancy_grid
+         - self.advice_grid
+        """
+        if Path(config.OCCUPANCY_GRID_PATH).is_file():
+            self.occupancy_grid = np.load(config.OCCUPANCY_GRID_PATH)
+            logger.info(f"Loaded occupancy grid from {config.OCCUPANCY_GRID_PATH}")
+        else:
+            self.occupancy_grid = self.compute_occupancy_grid()
+            logger.info(f"Computed occupancy grid")
+
+        if Path(config.ADVICE_GRID_PATH).is_file():
+            self.advice_grid = np.load(config.ADVICE_GRID_PATH)
+            logger.info(f"Loaded advice grid from {config.ADVICE_GRID_PATH}")
+        else:
+            self.advice_grid = self.compute_advice_grid()
+            logger.info(f"Computed advice grid")
+
+    def _world_to_grid_coords(self, x, y) -> Tuple[float, float]:
         """
         Convert world coordinates to grid coordinates.
         """
@@ -359,7 +358,7 @@ class EpuckSupervisor:
         grid_y = np.floor((y + self.arena_size[1] / 2) / grid_res)
         return round(grid_x), round(grid_y)
 
-    def _grid_to_world_coords(self, grid_x, grid_y):
+    def _grid_to_world_coords(self, grid_x, grid_y) -> Tuple[float, float]:
         """
         Convert grid coordinates to world coordinates (center of grid cell).
         """

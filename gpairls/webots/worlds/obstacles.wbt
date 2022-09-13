@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.6796395324520235 0.0011202169697937503 0.73354539807863 3.1391788073665454
-  position 0.14824238735311124 -0.10523295918253162 2.8637041962583614
+  orientation -0.6796388391685256 0.001120272639262915 0.7335460403293529 3.1391785187139476
+  position 0.1844734896006216 -0.10713960576073178 2.927380701117425
 }
 TexturedBackground {
 }
@@ -11,9 +11,10 @@ TexturedBackgroundLight {
 }
 DEF arena RectangleArena {
   floorSize 1 2
+  wallHeight 0.2
 }
 SolidBox {
-  translation -0.18 -0.34 0.06
+  translation -0.18 -0.41 0.06
   name "box1"
   size 0.6 0.1 0.1
   appearance PBRAppearance {
@@ -23,7 +24,7 @@ SolidBox {
   }
 }
 SolidBox {
-  translation 0.17 -0.02 0.06
+  translation 0.18 -0.07 0.06
   rotation 0 1 0 0
   name "box2"
   size 0.6 0.1 0.1
@@ -34,7 +35,7 @@ SolidBox {
   }
 }
 SolidBox {
-  translation 0.17 0.6 0.06
+  translation 0.19 0.61 0.06
   rotation 0 1 0 0
   name "box4"
   size 0.6 0.1 0.1
@@ -44,12 +45,28 @@ SolidBox {
     metalness 0
   }
 }
-DEF goal Apple {
-  translation 0 0.9 0.05
-  name "goal"
+DEF goal Solid {
+  translation 0 0.85 0.1
+  scale 0.5 0.5 0.5
+  children [
+    DEF BALL_SHAPE Shape {
+      appearance PBRAppearance {
+        baseColor 1 0.54 0.08
+        roughness 0.3
+        metalness 0
+      }
+      geometry Sphere {
+        radius 0.1
+        subdivision 4
+      }
+    }
+  ]
+  name "ball"
+  model "ball"
+  locked TRUE
 }
 SolidBox {
-  translation -0.17 0.28 0.06
+  translation -0.18 0.28 0.06
   rotation 0 1 0 0
   name "box3"
   size 0.6 0.1 0.1
@@ -66,7 +83,7 @@ DEF robot Robot {
     TouchSensor {
       translation 0 0 0.06
       boundingObject Box {
-        size 0.075 0.075 0.01
+        size 0.08 0.08 0.01
       }
     }
     RangeFinder {
@@ -93,7 +110,7 @@ DEF robot Robot {
         }
       ]
       endPoint DEF EPUCK_LEFT_WHEEL Solid {
-        translation 0 0.025999999999999978 0.02
+        translation 0 0.025999999999998764 0.02
         rotation 0 1 0 0
         children [
           DEF EPUCK_WHEEL Transform {
@@ -245,7 +262,7 @@ DEF robot Robot {
         }
       ]
       endPoint DEF EPUCK_RIGHT_WHEEL Solid {
-        translation 0 -0.026000000000000034 0.02
+        translation 0 -0.02599999999999909 0.02
         rotation 0 1 0 0
         children [
           Transform {

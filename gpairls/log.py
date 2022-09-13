@@ -1,6 +1,5 @@
 """
-Baseline agent.
-
+DBC logger, I use loguru
 Taken from DBC code (https://github.com/facebookresearch/deep_bisim4control),
 modified formatting and removed image/video logging.
 """
