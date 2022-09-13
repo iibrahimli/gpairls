@@ -33,4 +33,4 @@ WEBOTS_DATA_DIR.mkdir(exist_ok=True)
 OCCUPANCY_GRID_PATH = WEBOTS_DATA_DIR / "occupancy_grid.npy"
 
 # path to the advice grid
-ADVICE_GRID_PATH = OCCUPANCY_GRID_PATH.with_stem("advice_grid")
+ADVICE_GRID_PATH = WEBOTS_DATA_DIR / "advice_grid.npy"
