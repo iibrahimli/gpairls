@@ -77,9 +77,7 @@ def evaluate(env, agent, L, step, n_episodes=5):
             episode_step = 0
             while not done:
                 with torch.inference_mode():
-                    # action = agent.select_action(obs)
-                    # TODO: remove
-                    action = env.get_expert_action(expert_config)
+                    action = agent.select_action(obs)
                 next_obs, reward, done, _ = env.step(action)
                 episode_reward += reward
                 obs = next_obs
