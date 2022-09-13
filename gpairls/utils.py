@@ -165,7 +165,7 @@ def get_trajectory(agent, env, device):
     while not done:
         action = agent.sample_action(obs)
         next_obs, reward, done, _ = env.step(action)
-        occ_grid = env.get_occupancy_grid_image()
+        occ_grid = env.get_occupancy_grid_image() * 255
 
         # append
         obss.append(obs)
@@ -181,7 +181,7 @@ def get_trajectory(agent, env, device):
         "embs": np.array(embs),
         "actions": np.array(actions),
         "rewards": np.array(rewards),
-        "occ_grids": np.array(occ_grids)
+        "occ_grids": np.array(occ_grids).astype(np.uint8)
     }
 
     return traj
