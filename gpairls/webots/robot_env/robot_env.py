@@ -137,13 +137,13 @@ class RobotEnv(gym.Env):
         self.ax_im = None
         plt.close("all")
         del self.controller
-    
+
     def get_expert_action(self, expert_config):
         """
         Get the expert action from current state.
         """
         return self.controller.get_expert_action(expert_config)
-    
+
     def get_occupancy_grid_image(self):
         """
         Get occupancy grid as an image

@@ -13,13 +13,14 @@ from datetime import datetime
 import wandb
 import torch
 import numpy as np
+from loguru import logger
 
 from gpairls import config, utils
 from gpairls.webots import RobotEnv
 from gpairls.webots import config as env_config
 from gpairls.ppr import PPR
 from gpairls.experts import ExpertConfig
-from gpairls.log import Logger
+from gpairls.log import Logger as DBCLogger
 from gpairls.agent import BisimAgent
 
 
@@ -137,7 +138,7 @@ def run_training(agent, env, policy_reuse, expert_config):
         device=device,
     )
 
-    L = Logger(config.LOG_DIR, use_tb=False)
+    L = DBCLogger(config.LOG_DIR, use_tb=False)
 
     epsilon = 0.2
     episode = 0
@@ -245,25 +246,22 @@ if __name__ == "__main__":
     model_dir_path = Path("logs/model_cont/")
     if model_dir_path.exists() and any(model_dir_path.iterdir()):
         agent.load(model_dir_path, None)
-        print("Loaded model to continue training")
+        logger.info("Loaded model to continue training")
     else:
-        print("Training from scratch")
+        logger.info("Training from scratch")
 
     expert_config = ExpertConfig(availability=1.0, accuracy=1.0)
 
     policy_reuse = PPR(max_size=10_000, init_prob=0.8, decay_rate=0.001)
 
-    dt = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    RUN_NAME = f"{ENV_NAME}_bisim_{dt}"
-
-    print(f"Control timestep: {env_config.CONTROL_TIMESTEP} ms")
-    print(
+    logger.info(f"Control timestep: {env_config.CONTROL_TIMESTEP} ms")
+    logger.info(
         f"Max steps per episode: {env_config.MAX_STEPS} "
         f"({env_config.MAX_TIME_MINUTES} minutes sim time)"
     )
 
     wandb_config = {
-        "datetime": dt,
+        "datetime": datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),
         "env": {
             "name": ENV_NAME,
             "step_reward": env_config.STEP_REWARD,
@@ -321,7 +319,7 @@ if __name__ == "__main__":
     try:
         run_training(agent, env, policy_reuse, expert_config)
     except KeyboardInterrupt:
-        print("Stopping early")
+        logger.info("Stopping early")
     finally:
         env.close()
-        print("Done\n")
+        logger.info("Done")

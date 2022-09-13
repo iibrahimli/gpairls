@@ -6,12 +6,16 @@ import argparse
 import pathlib
 
 import torch
+from loguru import logger
 
 from gpairls import config, utils
 from gpairls.experts import ExpertConfig
 from gpairls.webots import RobotEnv
 from gpairls.agent import BisimAgent
 
+
+# enable colors for logger 
+logger = logger.opt(colors=True)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -47,21 +51,23 @@ if __name__ == "__main__":
 
     expert_config = ExpertConfig(1, 1)
 
-    agent.load(args.checkpoint, None)
-    print("Loaded model from", args.checkpoint)
+    # agent.load(args.checkpoint, None)
+    # logger.info(f"Loaded model from {args.checkpoint}")
 
     for episode in range(10):
         obs = env.reset()
         done = False
         step = 0
         episode_reward = 0
+
         while not done:
-            action = agent.sample_action(obs)
+            # action = agent.sample_action(obs)
+            action = [env.get_expert_action(expert_config)]
+
             obs, reward, done, info = env.step(action)
-            print(f"step {step} - action: {action[0]:.4f} - reward: {reward:.4f}")
-            env.render(show_occupancy_grid=True)
+            logger.info(f"<c>step {step}</c> - action: {action[0]:.4f} - reward: {reward:.4f}")
+
             episode_reward += reward
             step += 1
-        print()
-        print(f"Episode {episode}   reward: {episode_reward:.3f}")
-        print()
+        
+        logger.info(f"<c><i>Episode {episode}</i></c>  reward: <r>{episode_reward:.3f}</r>")

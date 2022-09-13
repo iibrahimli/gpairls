@@ -21,7 +21,7 @@ from gpairls.model import (
 
 
 # maximum gradient norm
-GRAD_MAX_NORM = 20
+GRAD_MAX_NORM = 10
 
 
 class BisimAgent:
