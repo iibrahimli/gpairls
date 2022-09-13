@@ -247,11 +247,11 @@ class EpuckSupervisor:
         _mark_position(occ_grid_img, *robot_grid_pos, 5, 2)
         _mark_position(occ_grid_img, *goal_grid_pos, 5, 3)
 
-        shortest_path = self.get_shortest_path(
-            tuple(self.robot.getSelf().getPosition())[:2]
-        )
-        for grid_pos in shortest_path:
-            _mark_position(occ_grid_img, *grid_pos, 2, 4)
+        # shortest_path = self.get_shortest_path(
+        #     tuple(self.robot.getSelf().getPosition())[:2]
+        # )
+        # for grid_pos in shortest_path:
+        #     _mark_position(occ_grid_img, *grid_pos, 2, 4)
 
         # convert to RGB image
         occ_grid_img = np.array(
