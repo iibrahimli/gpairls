@@ -184,8 +184,6 @@ class EpuckSupervisor:
         elif angle_diff < -math.pi:
             angle_diff += 2 * math.pi
 
-        logger.info(f"{robot_angle:.2f}, {advice_angle:.2f}, {angle_diff:.2f}")
-
         # normalize angle difference to [-1, 1]
         angle_diff /= math.pi
 
