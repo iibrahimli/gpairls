@@ -181,6 +181,7 @@ def get_trajectory(agent, env, device):
         "embs": np.array(embs),
         "actions": np.array(actions),
         "rewards": np.array(rewards),
+        "occ_grids": np.array(occ_grids)
     }
 
     return traj
