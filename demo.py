@@ -51,8 +51,8 @@ if __name__ == "__main__":
 
     expert_config = ExpertConfig(1, 1)
 
-    # agent.load(args.checkpoint, None)
-    # logger.info(f"Loaded model from {args.checkpoint}")
+    agent.load(args.checkpoint, None)
+    logger.info(f"Loaded model from {args.checkpoint}")
 
     for episode in range(10):
         obs = env.reset()
@@ -61,8 +61,8 @@ if __name__ == "__main__":
         episode_reward = 0
 
         while not done:
-            # action = agent.sample_action(obs)
-            action = [env.get_expert_action(expert_config)]
+            action = agent.sample_action(obs)
+            # action = [env.get_expert_action(expert_config)]
 
             obs, reward, done, info = env.step(action)
             logger.info(f"<c>step {step}</c> - action: {action[0]:.4f} - reward: {reward:.4f}")
