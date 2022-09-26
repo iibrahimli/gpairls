@@ -31,22 +31,22 @@ INIT_STEPS = 1000
 ENCODER_TYPE = "cnn"
 
 # dimensionality of feature vector from encoder
-ENCODER_FEATURE_DIM = 16
+ENCODER_FEATURE_DIM = 32
 
 # number of conv layers in the CNN encoder
 ENCODER_NUM_LAYERS = 3
 
 # number of filters in each encoder conv layer
-ENCODER_NUM_FILTERS = 16
+ENCODER_NUM_FILTERS = 32
 
 # actor and critic hidden dimensions
-HIDDEN_DIM = 16
+HIDDEN_DIM = 32
 
 # neurons in reward decoder hidden layers
-DECODER_DIM = 16
+DECODER_DIM = 32
 
 # neurons in transition model hidden layer
-TRANSITION_MODEL_DIM = 16
+TRANSITION_MODEL_DIM = 32
 
 REPLAY_BUFFER_CAPACITY = 50_000
 

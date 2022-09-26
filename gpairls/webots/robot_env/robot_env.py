@@ -94,6 +94,9 @@ class RobotEnv(gym.Env):
                 done = True
                 reward = config.GOAL_REWARD
 
+            # reward shaping: add inv goal distance to reward
+            reward += - goal_dist * 5
+
         observation = self._get_obs()
 
         return (observation, reward, done, self._get_info())

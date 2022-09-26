@@ -249,7 +249,7 @@ if __name__ == "__main__":
     else:
         logger.info("Training from scratch")
 
-    expert_config = ExpertConfig(availability=1.0, accuracy=1.0)
+    expert_config = ExpertConfig(availability=0.5, accuracy=1.0)
 
     policy_reuse = PPR(max_size=10_000, init_prob=0.8, decay_rate=0.001)
 

@@ -16,7 +16,7 @@ from gpairls import config
 from gpairls.model import (
     Actor,
     Critic,
-    ProbabilisticTransitionModel,
+    DeterministicTransitionModel,
 )
 
 
@@ -104,7 +104,7 @@ class BisimAgent:
 
         self.critic_target.load_state_dict(self.critic.state_dict())
 
-        self.transition_model = ProbabilisticTransitionModel(
+        self.transition_model = DeterministicTransitionModel(
             encoder_feature_dim, action_shape, transition_model_dim
         ).to(device)
 
