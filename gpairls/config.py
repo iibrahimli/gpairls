@@ -37,10 +37,10 @@ ENCODER_FEATURE_DIM = 32
 ENCODER_NUM_LAYERS = 3
 
 # number of filters in each encoder conv layer
-ENCODER_NUM_FILTERS = 32
+ENCODER_NUM_FILTERS = 64
 
 # actor and critic hidden dimensions
-HIDDEN_DIM = 32
+HIDDEN_DIM = 64
 
 # neurons in reward decoder hidden layers
 DECODER_DIM = 32
