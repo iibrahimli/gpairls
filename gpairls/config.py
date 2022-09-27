@@ -19,7 +19,7 @@ TRAJECTORY_DIR.mkdir(parents=True, exist_ok=True)
 MODEL_CONFIG_PATH = LOG_DIR / "model_config.yaml"
 
 # random seed for reproducibility
-SEED = 42
+SEED = 1337
 
 # number of steps to train each agent
 TRAINING_STEPS = 20_000_000
@@ -50,14 +50,14 @@ TRANSITION_MODEL_DIM = 32
 
 REPLAY_BUFFER_CAPACITY = 50_000
 
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 
-CRITIC_LR = 1e-3
+CRITIC_LR = 1e-4
 
-ACTOR_LR = 1e-3
+ACTOR_LR = 1e-4
 
 # is also the decoder LR
-ENCODER_LR = 1e-3
+ENCODER_LR = 1e-4
 
 # frequency of logging (steps)
 LOG_FREQ = 10000
